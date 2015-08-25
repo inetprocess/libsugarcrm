@@ -1,23 +1,21 @@
 {
-    "name": "vgrem/phpSPO",
-    "description": "This library provides a SharePoint client for PHP applications. This allows you to performs CRUD operations on SharePoint data, using an REST/OData based API for SharePoint 2013.",
+    "name": "inetprocess/sugarcrm",
+    "description": "This library provides a various classes to interact with SugarCRM",
     "type": "library",
-    "keywords": ["sharepoint", "rest", "curl", "api"],
+    "keywords": ["sugarcrm"],
     "authors": [
         {
-            "name": "Vadim Gremyachev",
-            "email": "vvgrem@gmail.com"
+            "name": "Emmanuel Dyan",
+            "email": "emmanuel.dyan@inetprocess.com"
         }
     ],
-    "license": "LGPL-3.0+",
     "minimum-stability": "dev",
     "require": {
-        "php": ">=5.3",
-        "ext-curl": "*"
+        "php": ">=5.3"
     },
     "autoload": {
         "psr-4": {
-            "VGrem\\phpSPO\\": "src/"
+            "Inet\\SugarCRM\\": "src/"
         }
     }
 }
