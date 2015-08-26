@@ -123,11 +123,6 @@ class EntryPoint
         $this->currentUser = $current_user;
         $this->log->info($this->logPrefix . "Retrieving {$current_user->full_name} to do everything with it");
 
-        // 5. Define Language
-        if (empty($current_language)) {
-            $current_language = $sugar_config['default_language'];
-        }
-
         // Finally some GLOBALS variables (such as log, directly saved as $GLOBALS['log']) are not kept correctly
         if (!array_key_exists($this->sugarDir, self::$sugarDb)) {
             self::$sugarDb[$this->sugarDir] = $GLOBALS['db'];
@@ -146,7 +141,6 @@ class EntryPoint
     {
         return $this->log;
     }
-
 
     /**
      * Returns the Sugar Dir where the entryPoint entered

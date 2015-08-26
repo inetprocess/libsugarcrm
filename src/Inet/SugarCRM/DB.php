@@ -93,19 +93,20 @@ class DB
             $callers = debug_backtrace();
             $msg = "Sorry I don't understand your SQL: " . PHP_EOL . $sql . PHP_EOL . PHP_EOL;
             $msg.= "I have been called by {$callers[1]['class']}::{$callers[1]['function']}";
-            throw new \RuntimeException($msg);
+            throw new \InvalidArgumentException($msg);
         }
 
         $data = array();
         $sql = preg_replace('/\s+/', ' ', $sql);
         $this->log->debug($this->logPrefix . 'Query: ' . $sql);
 
-        $res = $this->sugarDb->query($sql, MYSQLI_USE_RESULT);
+        $res = $this->sugarDb->query($sql, false);
         // Error in Query
         if (!empty($this->sugarDb->database->error)) {
-            throw new \RuntimeException("SQL Error in doQuery: {$this->sugarDb->database->error}");
+            throw new \InvalidArgumentException("SQL Error in doQuery: {$this->sugarDb->database->error}");
         }
-        // No date to send to the caller
+
+        // No data to send to the caller
         if (!isset($res->num_rows)) {
             return true;
         }

@@ -1,0 +1,22 @@
+<phpunit bootstrap="vendor/autoload.php">
+  <php>
+    <env name="sugarDir" value="../sugarcrm"/>
+    <env name="sugarUserId" value="1"/>
+    <!-- E_ALL & ~E_STRICT = 30719 -->
+    <ini name="error_reporting" value="30719"/>
+  </php>
+  <testsuites>
+    <testsuite name="Inet">
+        <directory>src/Inet/Tests</directory>
+    </testsuite>
+  </testsuites>
+  <filter>
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">src/Inet</directory>
+      <exclude>
+        <directory suffix=".php">src/Inet/Tests</directory>
+      </exclude>
+    </whitelist>
+  </filter>
+</phpunit>
+

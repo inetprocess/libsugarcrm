@@ -20,10 +20,23 @@ namespace Inet\SugarCRM;
  */
 class BeanFactoryCache extends \BeanFactory
 {
+    /**
+     * Taken from SugarCRM BeanFactory. Allows to clean the beans in cache.
+     * @return    void
+     */
     public static function clearCache()
     {
         self::$loadedBeans = array();
         self::$total = 0;
         self::$hits = 0;
+    }
+
+    /**
+     * Just in case somebody needs to get the loaded beans
+     * @return    array    Array of \SugarBean
+     */
+    public static function getLoadedBeans()
+    {
+        return self::$loadedBeans;
     }
 }
