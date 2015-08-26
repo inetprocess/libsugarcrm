@@ -81,8 +81,11 @@ class EntryPoint
         $this->sugarUserId = $sugarUserId;
 
         $callers = debug_backtrace();
-        $msg = " - I have been called by {$callers[1]['class']}::{$callers[1]['function']}";
-        $this->log->info($this->logPrefix . __FUNCTION__ . $msg);
+        // If called by a class / method
+        if (isset($callers[1]['class'])) {
+            $msg = " - I have been called by {$callers[1]['class']}::{$callers[1]['function']}";
+            $this->log->info($this->logPrefix . __FUNCTION__ . $msg);
+        }
         // Go Into Sugar
         // 1. Enter the folder
         if (!file_exists($this->sugarDir . '/include/entryPoint.php')) {
