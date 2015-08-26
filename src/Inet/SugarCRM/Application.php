@@ -7,7 +7,7 @@
  *
  * @author Emmanuel Dyan
  * @copyright 2005-2015 iNet Process
- * @package iNetETL
+ * @package inetprocess/sugarcrm
  * @license GNU General Public License v2.0
  * @link http://www.inetprocess.com
  */
