@@ -2,12 +2,14 @@
 That library allows anybody to interact with a SugarCRM application, outside that application. Suppose you need to do a importation script, running every night, with a very specific set of transformations or check. Then you need that kind of tools to be able to "Login" to SugarCRM, create or update beans, do SQL queries, etc ...
 
 # Warning
-Be very careful that Sugar doesn't do a very "clean" job so it's better to deactivate the strict standards erorr reporting in PHP to be able to use it. When I launch my script, I usualy do something like:
+* Be very careful that Sugar doesn't do a very "clean" job so it's better to deactivate the strict standards erorr reporting in PHP to be able to use it. When I launch my script, I usualy do something like:
 ```bash
 php -d 'error_reporting=E_ALL & ~E_STRICT'  test.php
 ```
 
-If you are not using my classes in another class (if you do like in examples below, directly calling the library), be more careful: **don't name your variables like sugar does, else you'll overwrite it** (example: _$db_ or _$log_).
+* If you are not using my classes in another class (if you do like in examples below, directly calling the library), be more careful: **don't name your variables like sugar does, else you'll overwrite it** (example: _$db_ or _$log_).
+
+* Last but not the least: you'll be able to instanciate the EntryPoint for only one instance of Sugar ! It uses GLOBALS variable such as $GLOBALS['db'] and I let you imagine what will happen if it's overwritten by another Instance of SugarCRM ;)
 
 # Classes
 ## Inet\SugarCRM\EntryPoint
