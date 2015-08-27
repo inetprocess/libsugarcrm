@@ -9,10 +9,13 @@
             "email": "emmanuel.dyan@inetprocess.com"
         }
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "1.0",
     "require": {
         "php": ">=5.3",
         "psr/log": "~1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0"
     },
     "autoload": {
         "psr-4": {

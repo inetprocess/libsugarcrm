@@ -1,6 +1,6 @@
 <?php
 /**
- * InetETL
+ * SugarCRM Tools
  *
  * PHP Version 5.3 -> 5.6
  * SugarCRM Versions 6.5 - 7.6
