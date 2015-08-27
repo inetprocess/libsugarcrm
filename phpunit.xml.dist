@@ -7,16 +7,7 @@
   </php>
   <testsuites>
     <testsuite name="Inet">
-        <directory>src/Inet/Tests</directory>
+        <directory>tests</directory>
     </testsuite>
   </testsuites>
-  <filter>
-    <whitelist processUncoveredFilesFromWhitelist="true">
-      <directory suffix=".php">src/Inet</directory>
-      <exclude>
-        <directory suffix=".php">src/Inet/Tests</directory>
-      </exclude>
-    </whitelist>
-  </filter>
 </phpunit>
-

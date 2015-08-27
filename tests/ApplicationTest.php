@@ -1,5 +1,5 @@
 <?php
-namespace Inet\Tests;
+namespace Inet\SugarCRM\Tests;
 
 use Inet\SugarCRM\Application;
 

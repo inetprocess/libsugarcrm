@@ -9,7 +9,7 @@
             "email": "emmanuel.dyan@inetprocess.com"
         }
     ],
-    "minimum-stability": "1.0",
+    "minimum-stability": "stable",
     "require": {
         "php": ">=5.3",
         "psr/log": "~1.0"
@@ -20,6 +20,11 @@
     "autoload": {
         "psr-4": {
             "Inet\\SugarCRM\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Inet\\SugarCRM\\Tests\\": "tests/"
         }
     }
 }
