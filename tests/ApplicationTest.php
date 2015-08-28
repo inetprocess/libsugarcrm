@@ -3,12 +3,11 @@ namespace Inet\SugarCRM\Tests;
 
 use Inet\SugarCRM\Application;
 
-class ApplicationTest extends \PHPUnit_Framework_TestCase
+class ApplicationTest extends SugarTestCase
 {
     public function testRightInstanciation()
     {
-        $entryPointTest = new EntryPointTest;
-        $entryPoint = $entryPointTest->rightInstanciation();
+        $entryPoint = $this->getEntryPointInstance();
 
         $app = new Application($entryPoint);
         $this->assertInstanceOf('Inet\SugarCRM\Application', $app);

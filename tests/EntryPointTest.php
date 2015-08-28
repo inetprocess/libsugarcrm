@@ -2,10 +2,9 @@
 namespace Inet\SugarCRM\Tests;
 
 use Inet\SugarCRM\EntryPoint;
-use PSR\Log\Logger;
 use Psr\Log\NullLogger;
 
-class EntryPointTest extends \PHPUnit_Framework_TestCase
+class EntryPointTest extends SugarTestCase
 {
     /** Define a wrong folder: exception thrown
      * @expectedException InvalidArgumentException
@@ -18,21 +17,9 @@ class EntryPointTest extends \PHPUnit_Framework_TestCase
         EntryPoint::createInstance($logger, '/foo', getenv('sugarUserId'));
     }
 
-    public function rightInstanciation()
-    {
-        try {
-            $logger = new NullLogger;
-            EntryPoint::createInstance($logger, getenv('sugarDir'), getenv('sugarUserId'));
-            $this->assertInstanceOf('Inet\SugarCRM\EntryPoint', EntryPoint::getInstance());
-        } catch (\RuntimeException $e) {
-        }
-        return EntryPoint::getInstance();
-    }
-
     public function testGettersSetters()
     {
-        $this->rightInstanciation();
-        $entryPoint = EntryPoint::getInstance();
+        $entryPoint = $this->getEntryPointInstance();
         $logger = $entryPoint->getLogger();
         $this->assertInstanceOf('PSR\Log\LoggerInterface', $logger);
 
@@ -54,16 +41,16 @@ class EntryPointTest extends \PHPUnit_Framework_TestCase
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessageRegExp /Wrong User ID: foo/
      */
-    public function testWrongInstanciationBadUser()
+    public function testSetBadUser()
     {
-        $entryPoint = EntryPoint::getInstance();
+        $entryPoint = $this->getEntryPointInstance();
         $entryPoint->setSugarUser('foo');
     }
 
     public function testGetInstance()
     {
         chdir(__DIR__);
-        $this->rightInstanciation();
+        $this->getEntryPointInstance();
         $this->assertEquals(getenv('sugarDir'), getcwd());
     }
 
