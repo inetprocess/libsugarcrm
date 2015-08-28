@@ -68,7 +68,6 @@ class Application
                 return $sugarConfig['installer_locked'];
             }
         } catch (SugarException $e) {
-            return false;
         }
         return false;
     }

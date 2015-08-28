@@ -13,6 +13,9 @@ class ApplicationTest extends SugarTestCase
         $this->assertEquals(realpath($sugarDir), $app->getPath());
         $this->assertTrue($app->isValid());
         $this->assertTrue($app->isInstalled());
+
+        $app = new Application(__DIR__ . '/invalid_sugar');
+        $this->assertFalse($app->isInstalled());
     }
 
     /**
@@ -97,5 +100,14 @@ class ApplicationTest extends SugarTestCase
             'build_timestamp' => '2014-12-12 09:59am',
         );
         $this->assertEquals($expected, $sugar->getVersion());
+    }
+
+    /**
+     * @expectedException \Inet\SugarCrm\SugarException
+     */
+    public function testInvalidVersion()
+    {
+        $sugar = new Application(__DIR__);
+        $sugar->getVersion();
     }
 }

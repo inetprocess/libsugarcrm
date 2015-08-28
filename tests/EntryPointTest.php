@@ -13,12 +13,30 @@ class EntryPointTest extends SugarTestCase
     /** Define a wrong folder: exception thrown
      * @expectedException \Inet\SugarCRM\SugarException
      * @expectedExceptionMessageRegExp #Unable to find an installed instance of SugarCRM in :/foo#
-     * @runInSeparateProcess
      */
     public function testWrongInstanciationBadFolder()
     {
         $logger = new NullLogger;
         EntryPoint::createInstance($logger, new Application('/foo'), '1');
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessageRegExp #You must first create the singleton instance with createInstance().#
+     */
+    public function testGetInstanceFailure()
+    {
+        EntryPoint::getInstance();
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessageRegExp #Unable to create a SugarCRM\\EntryPoint more than once.#
+     */
+    public function testCreateInstanceFailure()
+    {
+        $this->getEntryPointInstance();
+        EntryPoint::createInstance(new NullLogger, new Application('/foo'), '1');
     }
 
     public function testGettersSetters()
