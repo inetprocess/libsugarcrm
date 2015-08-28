@@ -12,7 +12,7 @@ class SugarTestCase extends \PHPUnit_Framework_TestCase
     {
         if (!EntryPoint::isCreated()) {
             $logger = new NullLogger;
-            EntryPoint::createInstance($logger, new Application(getenv('sugarDir')), getenv('sugarUserId'));
+            EntryPoint::createInstance(new Application($logger, getenv('sugarDir')), getenv('sugarUserId'));
             $this->assertInstanceOf('Inet\SugarCRM\EntryPoint', EntryPoint::getInstance());
         }
         return EntryPoint::getInstance();

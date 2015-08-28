@@ -14,11 +14,18 @@
 
 namespace Inet\SugarCRM;
 
+use Psr\Log\LoggerInterface;
+
 /**
  * SugarCRM Application Informations
  */
 class Application
 {
+    /**
+     * Logger for dependency injection
+     */
+    protected $logger;
+
     /**
      * SugarCRM Directory
      * @var    string
@@ -33,8 +40,9 @@ class Application
     /**
      * @param    string    $path    Path of SugarCrm installation directory.
      */
-    public function __construct($path)
+    public function __construct(LoggerInterface $logger, $path)
     {
+        $this->logger = $logger;
         $this->path = realpath($path) ?: $path;
     }
 
@@ -45,6 +53,11 @@ class Application
     public function getPath()
     {
         return $this->path;
+    }
+
+    public function getLogger()
+    {
+        return $this->logger;
     }
 
     /**

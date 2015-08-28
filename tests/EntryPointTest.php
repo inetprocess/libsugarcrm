@@ -16,8 +16,7 @@ class EntryPointTest extends SugarTestCase
      */
     public function testWrongInstanciationBadFolder()
     {
-        $logger = new NullLogger;
-        EntryPoint::createInstance($logger, new Application('/foo'), '1');
+        EntryPoint::createInstance(new Application(new NullLogger(), '/foo'), '1');
     }
 
     /**
@@ -36,7 +35,7 @@ class EntryPointTest extends SugarTestCase
     public function testCreateInstanceFailure()
     {
         $this->getEntryPointInstance();
-        EntryPoint::createInstance(new NullLogger, new Application('/foo'), '1');
+        EntryPoint::createInstance(new Application(new NullLogger(), '/foo'), '1');
     }
 
     public function testGettersSetters()

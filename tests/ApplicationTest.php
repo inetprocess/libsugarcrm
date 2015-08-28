@@ -1,6 +1,7 @@
 <?php
 namespace Inet\SugarCRM\Tests;
 
+use Psr\Log\NullLogger;
 use Inet\SugarCRM\Application;
 
 class ApplicationTest extends SugarTestCase
@@ -8,13 +9,13 @@ class ApplicationTest extends SugarTestCase
     public function testSugarPath()
     {
         $sugarDir = __DIR__ . '/fake_sugar';
-        $app = new Application($sugarDir);
+        $app = new Application(new NullLogger(), $sugarDir);
         $this->assertInstanceOf('Inet\SugarCRM\Application', $app);
         $this->assertEquals(realpath($sugarDir), $app->getPath());
         $this->assertTrue($app->isValid());
         $this->assertTrue($app->isInstalled());
 
-        $app = new Application(__DIR__ . '/invalid_sugar');
+        $app = new Application(new NullLogger(), __DIR__ . '/invalid_sugar');
         $this->assertFalse($app->isInstalled());
     }
 
@@ -23,13 +24,13 @@ class ApplicationTest extends SugarTestCase
      */
     public function testFailSugarPath()
     {
-        $sugar = new Application(__DIR__);
+        $sugar = new Application(new NullLogger(), __DIR__);
         $sugar->getSugarConfig();
     }
 
     public function testSugarConfig()
     {
-        $sugar = new Application(__DIR__ . '/fake_sugar');
+        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
         $actual_config = $sugar->getSugarConfig(true);
         require(__DIR__ . '/fake_sugar/config.php');
         require(__DIR__ . '/fake_sugar/config_override.php');
@@ -45,7 +46,7 @@ class ApplicationTest extends SugarTestCase
      */
     public function testInvalidSugarConfig()
     {
-        $sugar = new Application(__DIR__ . '/invalid_sugar');
+        $sugar = new Application(new NullLogger(), __DIR__ . '/invalid_sugar');
         $sugar->getSugarConfig();
     }
 
@@ -55,7 +56,7 @@ class ApplicationTest extends SugarTestCase
             'db_name' => 'test_db',
             'db_user_name' => 'test_user',
         );
-        $sugar = new Application(__DIR__ . '/fake_sugar');
+        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
         $actual = $sugar->normalizeDbParams($dbData);
         $expected['db_name'] = 'test_db';
         $expected['db_user_name'] = 'test_user';
@@ -73,7 +74,7 @@ class ApplicationTest extends SugarTestCase
         $db_data = array(
             'db_user_name' => 'test_user',
         );
-        $sugar = new Application(__DIR__ . '/fake_sugar');
+        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
         $sugar->normalizeDbParams($db_data);
     }
 
@@ -85,13 +86,13 @@ class ApplicationTest extends SugarTestCase
         $db_data = array(
             'db_name' => 'test_db',
         );
-        $sugar = new Application(__DIR__ . '/fake_sugar');
+        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
         $sugar->normalizeDbParams($db_data);
     }
 
     public function testGetVersion()
     {
-        $sugar = new Application(__DIR__ . '/fake_sugar');
+        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
         $expected = array(
             'version' => '7.5.0.1',
             'db_version' => '7.5.0.1',
@@ -107,7 +108,7 @@ class ApplicationTest extends SugarTestCase
      */
     public function testInvalidVersion()
     {
-        $sugar = new Application(__DIR__);
+        $sugar = new Application(new NullLogger(), __DIR__);
         $sugar->getVersion();
     }
 }

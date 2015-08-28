@@ -26,11 +26,6 @@ class EntryPoint
      * @var    string
      */
     protected $logPrefix;
-    /**
-     * Must Implement at least the LoggerInterface
-     * @var    LoggerInterface
-     */
-    protected $log;
 
     /**
      * SugarCRM Application
@@ -83,10 +78,9 @@ class EntryPoint
      * @param        Application        $sugarApp
      * @param        string             $sugarUserId
      */
-    private function __construct(LoggerInterface $logger, Application $sugarApp, $sugarUserId)
+    private function __construct(Application $sugarApp, $sugarUserId)
     {
         $this->logPrefix = __CLASS__ . ': ';
-        $this->log = $logger;
 
         $this->sugarApp = $sugarApp;
         $this->sugarUserId = $sugarUserId;
@@ -107,12 +101,12 @@ class EntryPoint
      * @param        string             $sugarUserId
      * @throws      \RuntimeException
      */
-    public static function createInstance(LoggerInterface $logger, Application $sugarApp, $sugarUserId)
+    public static function createInstance(Application $sugarApp, $sugarUserId)
     {
         if (!is_null(self::$instance)) {
             throw new \RuntimeException('Unable to create a SugarCRM\EntryPoint more than once.');
         }
-        $instance = new EntryPoint($logger, $sugarApp, $sugarUserId);
+        $instance = new EntryPoint($sugarApp, $sugarUserId);
         $instance->initSugar();
         self::$instance = $instance;
     }
@@ -133,12 +127,12 @@ class EntryPoint
     }
 
     /**
-     * Returns the logger set
+     * Alias for $this->getApplication()->getLogger()
      * @return    LoggerInterface
      */
     public function getLogger()
     {
-        return $this->log;
+        return $this->getApplication()->getLogger();
     }
 
     /**
@@ -200,7 +194,7 @@ class EntryPoint
         }
         $this->currentUser = $current_user;
         $this->sugarUserId = $sugarUserId;
-        $this->log->info($this->logPrefix . "Changed current user to {$current_user->full_name}.");
+        $this->getLogger()->info($this->logPrefix . "Changed current user to {$current_user->full_name}.");
     }
 
     /**
@@ -218,7 +212,7 @@ class EntryPoint
         // If called by a class / method
         if (isset($callers[1]['class'])) {
             $msg = " - I have been called by {$callers[1]['class']}::{$callers[1]['function']}";
-            $this->log->info($this->logPrefix . __FUNCTION__ . $msg);
+            $this->getLogger()->info($this->logPrefix . __FUNCTION__ . $msg);
         }
         $this->chdirToSugarDir();
         $this->loadSugarEntryPoint();
