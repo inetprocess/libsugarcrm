@@ -27,9 +27,10 @@ Usage Example:
 ```php
 <?php
 require_once 'vendor/autoload.php';
+use Psr\Log\NullLogger;
 use Inet\SugarCRM\Application;
 
-$sugarApp = new Application('/home/sugarcrm/www');
+$sugarApp = new Application(new NullLogger(), '/home/sugarcrm/www');
 echo $sugarApp->getSugarPath();
 if ($sugarApp->isValid()) {
     echo $sugarApp->getVersion();
@@ -51,9 +52,9 @@ use Inet\SugarCRM\EntryPoint;
 
 if (!EntryPoint::isCreated()) {
     $nullLogger = new NullLogger;
-    $sugarApp = new Application('/home/sugarcrm/www');
+    $sugarApp = new Application($nullLogger, '/home/sugarcrm/www');
     // enter sugar
-    EntryPoint::createInstance($nullLogger, $sugarApp, '1');
+    EntryPoint::createInstance($sugarApp, '1');
 }
 $sugarEP = EntryPoint::getInstance();
 ```
@@ -77,9 +78,9 @@ use Inet\SugarCRM\Bean;
 
 if (!EntryPoint::isCreated()) {
     $nullLogger = new NullLogger;
-    $sugarApp = new Application('/home/sugarcrm/www');
+    $sugarApp = new Application($nullLogger, '/home/sugarcrm/www');
     // enter sugar
-    EntryPoint::createInstance($nullLogger, $sugarApp, '1');
+    EntryPoint::createInstance($sugarApp, '1');
 }
 $sugarEP = EntryPoint::getInstance();
 // get the DB Class
