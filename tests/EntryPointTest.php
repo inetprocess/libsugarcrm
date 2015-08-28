@@ -1,20 +1,24 @@
 <?php
 namespace Inet\SugarCRM\Tests;
 
+use Inet\SugarCRM\Application;
 use Inet\SugarCRM\EntryPoint;
 use Psr\Log\NullLogger;
 
+/**
+ * @group sugarcrm
+ */
 class EntryPointTest extends SugarTestCase
 {
     /** Define a wrong folder: exception thrown
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessageRegExp #Wrong SugarCRM folder: /foo#
+     * @expectedException \Inet\SugarCRM\SugarException
+     * @expectedExceptionMessageRegExp #Unable to find an installed instance of SugarCRM in :/foo#
      * @runInSeparateProcess
      */
     public function testWrongInstanciationBadFolder()
     {
         $logger = new NullLogger;
-        EntryPoint::createInstance($logger, '/foo', getenv('sugarUserId'));
+        EntryPoint::createInstance($logger, new Application('/foo'), '1');
     }
 
     public function testGettersSetters()
@@ -29,11 +33,13 @@ class EntryPointTest extends SugarTestCase
             $lastCwd = $entryPoint->getLastCwd();
             $expectedSugarDir = realpath($lastCwd . '/' . $expectedSugarDir);
         }
-        $sugarDir = $entryPoint->getSugarDir();
+        $sugarDir = $entryPoint->getPath();
         $this->assertEquals($expectedSugarDir, $sugarDir);
 
         $sugarDB = $entryPoint->getSugarDb();
         $this->assertInstanceOf('\MysqliManager', $sugarDB);
+
+        $this->assertInstanceOf('\Inet\SugarCRM\Application', $entryPoint->getApplication());
 
         $currentUser = $entryPoint->getCurrentUser();
         $this->assertInstanceOf('\User', $currentUser);
@@ -50,20 +56,14 @@ class EntryPointTest extends SugarTestCase
     public function testSetBadUser()
     {
         $entryPoint = $this->getEntryPointInstance();
-        $entryPoint->setSugarUser('foo');
+        $entryPoint->setCurrentUser('foo');
     }
 
     public function testGetInstance()
     {
         chdir(__DIR__);
         $entryPoint = $this->getEntryPointInstance();
-        $this->assertEquals($entryPoint->getSugarDir(), getcwd());
+        $this->assertEquals($entryPoint->getPath(), getcwd());
         $this->assertEquals(__DIR__, $entryPoint->getLastCwd());
-    }
-
-    public function tearDown()
-    {
-        // Make sure sugar is not running from local dir
-        $this->assertFileNotExists(__DIR__ . '/../cache');
     }
 }

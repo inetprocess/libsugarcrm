@@ -35,7 +35,7 @@ class Application
      */
     public function __construct($path)
     {
-        $this->path = realpath($path);
+        $this->path = realpath($path) ?: $path;
     }
 
     /**
@@ -93,8 +93,8 @@ class Application
             $this->clearConfigCache();
         }
         if ($this->config == null) {
-            $path = $this->path;
-            if ($this->isValid($path) and is_file($path . '/config.php')) {
+            $path = $this->getPath();
+            if ($this->isValid() and is_file($path . '/config.php')) {
                 require($path . '/config.php');
                 if (!isset($sugar_config) or !is_array($sugar_config)) {
                     throw new SugarException("Invalid sugarcrm configuration file at '$path/config.php'");

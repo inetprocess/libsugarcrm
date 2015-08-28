@@ -33,12 +33,12 @@ class EntryPoint
     protected $log;
 
     /**
-     * SugarCRM Directory
+     * SugarCRM Application
      * @var    string
      */
-    protected $sugarDir;
+    protected $sugarApp;
     /**
-     * Last Current working directory before changing to sugarDir
+     * Last Current working directory before changing to getPath()
      * @var    string
      */
     protected $lastCwd;
@@ -80,31 +80,39 @@ class EntryPoint
     /**
      * Constructor, to get the Container, then the log and config
      * @param        LoggerInterface    $log             Allow any logger extended from PSR\Log
-     * @param        string             $sugarDir
+     * @param        Application        $sugarApp
      * @param        string             $sugarUserId
      */
-    private function __construct(LoggerInterface $logger, $sugarDir, $sugarUserId)
+    private function __construct(LoggerInterface $logger, Application $sugarApp, $sugarUserId)
     {
         $this->logPrefix = __CLASS__ . ': ';
         $this->log = $logger;
 
-        $this->sugarDir = realpath($sugarDir);
+        $this->sugarApp = $sugarApp;
         $this->sugarUserId = $sugarUserId;
+    }
+
+    /**
+     * @return true if the EntryPoint instances is already created.
+     */
+    public static function isCreated()
+    {
+        return !is_null(self::$instance);
     }
 
     /**
      * Create the singleton instance only if it doesn't exists already.
      * @param        LoggerInterface    $log             Allow any logger extended from PSR\Log
-     * @param        string             $sugarDir
+     * @param        Application        $sugarApp
      * @param        string             $sugarUserId
      * @throws      \RuntimeException
      */
-    public static function createInstance(LoggerInterface $logger, $sugarDir, $sugarUserId)
+    public static function createInstance(LoggerInterface $logger, Application $sugarApp, $sugarUserId)
     {
         if (!is_null(self::$instance)) {
             throw new \RuntimeException('Unable to create a SugarCRM\EntryPoint more than once.');
         }
-        $instance = new EntryPoint($logger, $sugarDir, $sugarUserId);
+        $instance = new EntryPoint($logger, $sugarApp, $sugarUserId);
         $instance->initSugar();
         self::$instance = $instance;
     }
@@ -134,16 +142,25 @@ class EntryPoint
     }
 
     /**
-     * Returns the Sugar Dir where the entryPoint entered
+     * Returns the Sugar Application used by this EntryPoint
      * @return    string
      */
-    public function getSugarDir()
+    public function getApplication()
     {
-        return $this->sugarDir;
+        return $this->sugarApp;
     }
 
     /**
-     * Returns the last working directory before moving to sugarDir
+     * Alias for $this->getApplication()->getPath()
+     * @return string Sugar path.
+     */
+    public function getPath()
+    {
+        return $this->getApplication()->getPath();
+    }
+
+    /**
+     * Returns the last working directory before moving to getPath()
      * @return    string
      */
     public function getLastCwd()
@@ -152,7 +169,7 @@ class EntryPoint
     }
 
     /**
-     * Returns the Sugar Dir where the entryPoint entered
+     * Returns the SugarDb of this instance
      * @return    mysqli
      */
     public function getSugarDb()
@@ -167,6 +184,23 @@ class EntryPoint
     public function getCurrentUser()
     {
         return $this->currentUser;
+    }
+
+    /**
+     * Set the SugarCRM current user. This user will be used for all remaining operation.
+     * @param string $sugarUserId Database id of the sugar crm user.
+     */
+    public function setCurrentUser($sugarUserId)
+    {
+        // Retrieve my User
+        $current_user = new \User;
+        $current_user = $current_user->retrieve($sugarUserId);
+        if (empty($current_user)) {
+            throw new \InvalidArgumentException('Wrong User ID: ' . $sugarUserId);
+        }
+        $this->currentUser = $current_user;
+        $this->sugarUserId = $sugarUserId;
+        $this->log->info($this->logPrefix . "Changed current user to {$current_user->full_name}.");
     }
 
     /**
@@ -188,7 +222,7 @@ class EntryPoint
         }
         $this->chdirToSugarDir();
         $this->loadSugarEntryPoint();
-        $this->setSugarUser($this->sugarUserId);
+        $this->setCurrentUser($this->sugarUserId);
         $this->getSugarGlobals();
     }
 
@@ -198,11 +232,11 @@ class EntryPoint
      */
     private function chdirToSugarDir()
     {
-        if (!file_exists($this->sugarDir . '/include/entryPoint.php')) {
-            throw new \InvalidArgumentException('Wrong SugarCRM folder: ' . $this->sugarDir, 1);
+        if (!$this->getApplication()->isInstalled()) {
+            throw new SugarException('Unable to find an installed instance of SugarCRM in :' . $this->getPath(), 1);
         }
         $this->lastCwd = realpath(getcwd());
-        @chdir($this->sugarDir);
+        @chdir($this->getPath());
     }
 
     private function loadSugarEntryPoint()
@@ -223,6 +257,9 @@ class EntryPoint
         global $sugar_config, $current_user, $system_config, $beanList, $app_list_strings;
         global $timedate, $current_entity, $locale, $current_language;
 
+        // Sugar will not reload config.php so we need to make sure the $sugar_config global is set properly.
+        $sugar_config = $this->getApplication()->getSugarConfig(true);
+
         // 2. Get the "autoloader"
         require_once('include/entryPoint.php');
 
@@ -232,23 +269,6 @@ class EntryPoint
             array_merge($GLOBALS, get_defined_vars()),
             array_keys($beforeVars)
         );
-    }
-
-    /**
-     * Set the SugarCRM current user. This user will be used for all remaining operation.
-     * @param string $sugarUserId Database id of the sugar crm user.
-     */
-    public function setSugarUser($sugarUserId)
-    {
-        // Retrieve my User
-        $current_user = new \User;
-        $current_user = $current_user->retrieve($sugarUserId);
-        if (empty($current_user)) {
-            throw new \InvalidArgumentException('Wrong User ID: ' . $sugarUserId);
-        }
-        $this->currentUser = $current_user;
-        $this->sugarUserId = $sugarUserId;
-        $this->log->info($this->logPrefix . "Changed current user to {$current_user->full_name}.");
     }
 
     /**
@@ -277,7 +297,7 @@ class EntryPoint
             array('_GET', '_POST', '_COOKIE', '_FILES', 'argv', 'argc', '_SERVER', 'GLOBALS', '_ENV', '_REQUEST')
         );
 
-        if (!array_key_exists($this->sugarDir, $this->globals)) {
+        if (!array_key_exists($this->getPath(), $this->globals)) {
             $this->globals = array();
         }
 
