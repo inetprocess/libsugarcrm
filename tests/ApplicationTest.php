@@ -11,6 +11,6 @@ class ApplicationTest extends SugarTestCase
 
         $app = new Application($entryPoint);
         $this->assertInstanceOf('Inet\SugarCRM\Application', $app);
-        $this->assertEquals(getenv('sugarDir'), $app->getSugarPath());
+        $this->assertEquals($entryPoint->getSugarDir(), $app->getSugarPath());
     }
 }

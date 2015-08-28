@@ -23,8 +23,14 @@ class EntryPointTest extends SugarTestCase
         $logger = $entryPoint->getLogger();
         $this->assertInstanceOf('PSR\Log\LoggerInterface', $logger);
 
+
+        $expectedSugarDir = getenv('sugarDir');
+        if ($expectedSugarDir[0] != '/') {
+            $lastCwd = $entryPoint->getLastCwd();
+            $expectedSugarDir = realpath($lastCwd . '/' . $expectedSugarDir);
+        }
         $sugarDir = $entryPoint->getSugarDir();
-        $this->assertEquals($sugarDir, getenv('sugarDir'));
+        $this->assertEquals($expectedSugarDir, $sugarDir);
 
         $sugarDB = $entryPoint->getSugarDb();
         $this->assertInstanceOf('\MysqliManager', $sugarDB);
@@ -50,8 +56,9 @@ class EntryPointTest extends SugarTestCase
     public function testGetInstance()
     {
         chdir(__DIR__);
-        $this->getEntryPointInstance();
-        $this->assertEquals(getenv('sugarDir'), getcwd());
+        $entryPoint = $this->getEntryPointInstance();
+        $this->assertEquals($entryPoint->getSugarDir(), getcwd());
+        $this->assertEquals(__DIR__, $entryPoint->getLastCwd());
     }
 
     public function tearDown()
