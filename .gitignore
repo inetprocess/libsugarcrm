@@ -1,3 +1,7 @@
+# Editor files.
+.*.sw*
+*~
+
 composer.lock
 phpunit.xml
 vendor

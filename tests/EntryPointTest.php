@@ -7,22 +7,32 @@ use Psr\Log\NullLogger;
 
 class EntryPointTest extends \PHPUnit_Framework_TestCase
 {
-    private $entryPoint = null;
+    /** Define a wrong folder: exception thrown
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessageRegExp #Wrong SugarCRM folder: /foo#
+     * @runInSeparateProcess
+     */
+    public function testWrongInstanciationBadFolder()
+    {
+        $logger = new NullLogger;
+        EntryPoint::createInstance($logger, '/foo', getenv('sugarUserId'));
+    }
 
     public function rightInstanciation()
     {
-        if (is_null($this->entryPoint)) {
+        try {
             $logger = new NullLogger;
-            $this->entryPoint = new EntryPoint($logger, getenv('sugarDir'), getenv('sugarUserId'));
-            $this->assertInstanceOf('Inet\SugarCRM\EntryPoint', $this->entryPoint);
+            EntryPoint::createInstance($logger, getenv('sugarDir'), getenv('sugarUserId'));
+            $this->assertInstanceOf('Inet\SugarCRM\EntryPoint', EntryPoint::getInstance());
+        } catch (\RuntimeException $e) {
         }
-
-        return $this->entryPoint;
+        return EntryPoint::getInstance();
     }
 
     public function testGettersSetters()
     {
-        $entryPoint = $this->rightInstanciation();
+        $this->rightInstanciation();
+        $entryPoint = EntryPoint::getInstance();
         $logger = $entryPoint->getLogger();
         $this->assertInstanceOf('PSR\Log\LoggerInterface', $logger);
 
@@ -40,23 +50,26 @@ class EntryPointTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('Users', $beansList);
     }
 
-    /** Define a wrong folder: exception thrown
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessageRegExp #Wrong SugarCRM folder: /foo#
-     */
-    public function testWrongInstanciationBadFolder()
-    {
-        $logger = new NullLogger;
-        new EntryPoint($logger, '/foo', getenv('sugarUserId'));
-    }
-
     /** Define a wrong user: exception thrown
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessageRegExp /Wrong User ID: foo/
      */
     public function testWrongInstanciationBadUser()
     {
-        $logger = new NullLogger;
-        new EntryPoint($logger, getenv('sugarDir'), 'foo');
+        $entryPoint = EntryPoint::getInstance();
+        $entryPoint->setSugarUser('foo');
+    }
+
+    public function testGetInstance()
+    {
+        chdir(__DIR__);
+        $this->rightInstanciation();
+        $this->assertEquals(getenv('sugarDir'), getcwd());
+    }
+
+    public function tearDown()
+    {
+        // Make sure sugar is not running from local dir
+        $this->assertFileNotExists(__DIR__ . '/../cache');
     }
 }
