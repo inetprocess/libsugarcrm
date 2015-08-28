@@ -6,13 +6,12 @@ use Inet\SugarCRM\DB;
 use Inet\SugarCRM\Bean;
 use Inet\SugarCRM\BeanFactoryCache;
 
-class BeanFactoryCacheTest extends \PHPUnit_Framework_TestCase
+class BeanFactoryCacheTest extends SugarTestCase
 {
     public function testRightInstanciation()
     {
         // first load a bean
-        $entryPointTest = new EntryPointTest;
-        $entryPoint = $entryPointTest->rightInstanciation();
+        $entryPoint = $this->getEntryPointInstance();
 
         // My beans are empty: I have never loaded anything
         BeanFactoryCache::clearCache();

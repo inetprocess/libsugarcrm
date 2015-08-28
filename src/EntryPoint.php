@@ -33,10 +33,15 @@ class EntryPoint
     protected $log;
 
     /**
-     * SugarCRM Directory
+     * SugarCRM Application
      * @var    string
      */
-    protected $sugarDir;
+    protected $sugarApp;
+    /**
+     * Last Current working directory before changing to getPath()
+     * @var    string
+     */
+    protected $lastCwd;
     /**
      * SugarCRM User Id to connect with
      * @var    string
@@ -52,88 +57,79 @@ class EntryPoint
      * SugarCRM DB Object
      * @var    \MySQLi
      */
-    private static $sugarDb = array();
+    private $sugarDb;
 
     /**
      * List of Beans from SugarCRM as "$key [singular] => $value [plural]"
      * @var    array
      */
-    private static $beanList = array();
+    private $beanList = array();
 
     /**
      * Globals variables defined (save it because it's lost sometimes)
      * @var    array
      */
-    private static $globals = array();
+    private $globals = array();
+
+    /**
+     * Singleton pattern instance
+     * @var Inet\SugarCrm\EntryPoint
+     */
+    private static $instance = null;
 
     /**
      * Constructor, to get the Container, then the log and config
      * @param        LoggerInterface    $log             Allow any logger extended from PSR\Log
-     * @param        string             $sugarDir
+     * @param        Application        $sugarApp
      * @param        string             $sugarUserId
      */
-    public function __construct(LoggerInterface $logger, $sugarDir, $sugarUserId)
+    private function __construct(LoggerInterface $logger, Application $sugarApp, $sugarUserId)
     {
         $this->logPrefix = __CLASS__ . ': ';
         $this->log = $logger;
 
-        $this->sugarDir = $sugarDir;
+        $this->sugarApp = $sugarApp;
         $this->sugarUserId = $sugarUserId;
+    }
 
-        $callers = debug_backtrace();
-        // If called by a class / method
-        if (isset($callers[1]['class'])) {
-            $msg = " - I have been called by {$callers[1]['class']}::{$callers[1]['function']}";
-            $this->log->info($this->logPrefix . __FUNCTION__ . $msg);
-        }
-        // Go Into Sugar
-        // 1. Enter the folder
-        if (!file_exists($this->sugarDir . '/include/entryPoint.php')) {
-            throw new \InvalidArgumentException('Wrong SugarCRM folder: ' . $this->sugarDir, 1);
-        }
-        @chdir($this->sugarDir);
+    /**
+     * @return true if the EntryPoint instances is already created.
+     */
+    public static function isCreated()
+    {
+        return !is_null(self::$instance);
+    }
 
-        // 2. Check that SugarEntry is not set (it could be if we have multiple instances)
-        if (!defined('sugarEntry')) {
-            define('sugarEntry', true);
+    /**
+     * Create the singleton instance only if it doesn't exists already.
+     * @param        LoggerInterface    $log             Allow any logger extended from PSR\Log
+     * @param        Application        $sugarApp
+     * @param        string             $sugarUserId
+     * @throws      \RuntimeException
+     */
+    public static function createInstance(LoggerInterface $logger, Application $sugarApp, $sugarUserId)
+    {
+        if (!is_null(self::$instance)) {
+            throw new \RuntimeException('Unable to create a SugarCRM\EntryPoint more than once.');
         }
-        if (!defined('ENTRY_POINT_TYPE')) {
-            define('ENTRY_POINT_TYPE', 'api');
+        $instance = new EntryPoint($logger, $sugarApp, $sugarUserId);
+        $instance->initSugar();
+        self::$instance = $instance;
+    }
+
+    /**
+     * Returns EntryPoint singleton instance.
+     * @throws \RuntimeException if the instance is not initiated.
+     * @return    LoggerInterface
+     */
+    public static function getInstance()
+    {
+        if (is_null(self::$instance)) {
+            throw new \RuntimeException('You must first create the singleton instance with createInstance().');
         }
-
-        // Save the variables as it is to make a diff later
-        $beforeVars = get_defined_vars();
-
-        // Define sugar variables as global (so new)
-        global $sugar_config, $current_user, $system_config, $beanList, $app_list_strings;
-        global $timedate, $current_entity, $locale, $current_language;
-
-        // 3. Get the "autoloader"
-        require_once('include/entryPoint.php');
-
-        // Set all variables as Global to be able to access $sugar_config for example
-        // Even the GLOBALS one ! Because I save it locally and it could disappear later
-        $this->defineVariablesAsGlobal(
-            array_merge($GLOBALS, get_defined_vars()),
-            array_keys($beforeVars)
-        );
-        // 4. Retrieve my User
-        $current_user = new \User;
-        $current_user = $current_user->retrieve($this->sugarUserId);
-        if (empty($current_user)) {
-            throw new \InvalidArgumentException('Wrong User ID: ' . $sugarUserId);
-        }
-        $this->currentUser = $current_user;
-        $this->log->info($this->logPrefix . "Retrieving {$current_user->full_name} to do everything with it");
-
-        // Finally some GLOBALS variables (such as log, directly saved as $GLOBALS['log']) are not kept correctly
-        if (!array_key_exists($this->sugarDir, self::$sugarDb)) {
-            self::$sugarDb[$this->sugarDir] = $GLOBALS['db'];
-        }
-        if (!array_key_exists($this->sugarDir, self::$beanList)) {
-            self::$beanList[$this->sugarDir] = $GLOBALS['beanList'];
-            asort(self::$beanList[$this->sugarDir]);
-        }
+        self::$instance->setGlobalsFromSugar();
+        self::$instance->chdirToSugarDir();
+        return self::$instance;
     }
 
     /**
@@ -146,21 +142,39 @@ class EntryPoint
     }
 
     /**
-     * Returns the Sugar Dir where the entryPoint entered
+     * Returns the Sugar Application used by this EntryPoint
      * @return    string
      */
-    public function getSugarDir()
+    public function getApplication()
     {
-        return $this->sugarDir;
+        return $this->sugarApp;
     }
 
     /**
-     * Returns the Sugar Dir where the entryPoint entered
+     * Alias for $this->getApplication()->getPath()
+     * @return string Sugar path.
+     */
+    public function getPath()
+    {
+        return $this->getApplication()->getPath();
+    }
+
+    /**
+     * Returns the last working directory before moving to getPath()
+     * @return    string
+     */
+    public function getLastCwd()
+    {
+        return $this->lastCwd;
+    }
+
+    /**
+     * Returns the SugarDb of this instance
      * @return    mysqli
      */
     public function getSugarDb()
     {
-        return self::$sugarDb[$this->sugarDir];
+        return $this->sugarDb;
     }
 
     /**
@@ -173,12 +187,99 @@ class EntryPoint
     }
 
     /**
+     * Set the SugarCRM current user. This user will be used for all remaining operation.
+     * @param string $sugarUserId Database id of the sugar crm user.
+     */
+    public function setCurrentUser($sugarUserId)
+    {
+        // Retrieve my User
+        $current_user = new \User;
+        $current_user = $current_user->retrieve($sugarUserId);
+        if (empty($current_user)) {
+            throw new \InvalidArgumentException('Wrong User ID: ' . $sugarUserId);
+        }
+        $this->currentUser = $current_user;
+        $this->sugarUserId = $sugarUserId;
+        $this->log->info($this->logPrefix . "Changed current user to {$current_user->full_name}.");
+    }
+
+    /**
      * Returns the List Of Beans
      * @return    array
      */
     public function getBeansList()
     {
-        return self::$beanList[$this->sugarDir];
+        return $this->beanList;
+    }
+
+    private function initSugar()
+    {
+        $callers = debug_backtrace();
+        // If called by a class / method
+        if (isset($callers[1]['class'])) {
+            $msg = " - I have been called by {$callers[1]['class']}::{$callers[1]['function']}";
+            $this->log->info($this->logPrefix . __FUNCTION__ . $msg);
+        }
+        $this->chdirToSugarDir();
+        $this->loadSugarEntryPoint();
+        $this->setCurrentUser($this->sugarUserId);
+        $this->getSugarGlobals();
+    }
+
+    /**
+     * Move to Sugar directory.
+     * @throws \InvalidArgumentException if the folder is not a valid sugarcrm installation folder.
+     */
+    private function chdirToSugarDir()
+    {
+        if (!$this->getApplication()->isInstalled()) {
+            throw new SugarException('Unable to find an installed instance of SugarCRM in :' . $this->getPath(), 1);
+        }
+        $this->lastCwd = realpath(getcwd());
+        @chdir($this->getPath());
+    }
+
+    private function loadSugarEntryPoint()
+    {
+        // 1. Check that SugarEntry is not set (it could be if we have multiple instances)
+        if (!defined('sugarEntry')) {
+            // @codingStandardsIgnoreStart
+            define('sugarEntry', true);
+            // @codingStandardsIgnoreEnd
+        }
+        if (!defined('ENTRY_POINT_TYPE')) {
+            define('ENTRY_POINT_TYPE', 'api');
+        }
+        // Save the variables as it is to make a diff later
+        $beforeVars = get_defined_vars();
+
+        // Define sugar variables as global (so new)
+        global $sugar_config, $current_user, $system_config, $beanList, $app_list_strings;
+        global $timedate, $current_entity, $locale, $current_language;
+
+        // Sugar will not reload config.php so we need to make sure the $sugar_config global is set properly.
+        $sugar_config = $this->getApplication()->getSugarConfig(true);
+
+        // 2. Get the "autoloader"
+        require_once('include/entryPoint.php');
+
+        // Set all variables as Global to be able to access $sugar_config for example
+        // Even the GLOBALS one ! Because I save it locally and it could disappear later
+        $this->defineVariablesAsGlobal(
+            array_merge($GLOBALS, get_defined_vars()),
+            array_keys($beforeVars)
+        );
+    }
+
+    /**
+     * Get some GLOBALS variables from the instance
+     * (such as log, directly saved as $GLOBALS['log'] are not kept correctly)
+     */
+    private function getSugarGlobals()
+    {
+        $this->sugarDb = $GLOBALS['db'];
+        $this->beanList = $GLOBALS['beanList'];
+        asort($this->beanList);
     }
 
     /**
@@ -196,8 +297,8 @@ class EntryPoint
             array('_GET', '_POST', '_COOKIE', '_FILES', 'argv', 'argc', '_SERVER', 'GLOBALS', '_ENV', '_REQUEST')
         );
 
-        if (!array_key_exists($this->sugarDir, self::$globals)) {
-            self::$globals[$this->sugarDir] = array();
+        if (!array_key_exists($this->getPath(), $this->globals)) {
+            $this->globals = array();
         }
 
         foreach ($variables as $key => $value) {
@@ -207,17 +308,28 @@ class EntryPoint
             }
             // Ignore superglobals
             if (!in_array($key, $ignoreVariables)
-              || (array_key_exists($key, self::$globals[$this->sugarDir])
-                  && $value != self::$globals[$this->sugarDir][$key])) {
-                self::$globals[$this->sugarDir][$key] = $value;
+              || (array_key_exists($key, $this->globals)
+                  && $value != $this->globals[$key])) {
+                $this->globals[$key] = $value;
             }
         }
 
         // Inject only new variables
-        foreach (self::$globals[$this->sugarDir] as $key => $val) {
+        foreach ($this->globals as $key => $val) {
             if (!array_key_exists($key, $GLOBALS) || $GLOBALS[$key] != $val) {
                 $GLOBALS[$key] = $val;
             }
         }
+    }
+
+    /**
+     * Load stored global variables state into global state
+     */
+    public function setGlobalsFromSugar()
+    {
+        $this->defineVariablesAsGlobal(
+            $this->globals,
+            array()
+        );
     }
 }

@@ -1,36 +1,63 @@
 <?php
 namespace Inet\SugarCRM\Tests;
 
+use Inet\SugarCRM\Application;
 use Inet\SugarCRM\EntryPoint;
-use PSR\Log\Logger;
 use Psr\Log\NullLogger;
 
-class EntryPointTest extends \PHPUnit_Framework_TestCase
+/**
+ * @group sugarcrm
+ */
+class EntryPointTest extends SugarTestCase
 {
-    private $entryPoint = null;
-
-    public function rightInstanciation()
+    /** Define a wrong folder: exception thrown
+     * @expectedException \Inet\SugarCRM\SugarException
+     * @expectedExceptionMessageRegExp #Unable to find an installed instance of SugarCRM in :/foo#
+     */
+    public function testWrongInstanciationBadFolder()
     {
-        if (is_null($this->entryPoint)) {
-            $logger = new NullLogger;
-            $this->entryPoint = new EntryPoint($logger, getenv('sugarDir'), getenv('sugarUserId'));
-            $this->assertInstanceOf('Inet\SugarCRM\EntryPoint', $this->entryPoint);
-        }
+        $logger = new NullLogger;
+        EntryPoint::createInstance($logger, new Application('/foo'), '1');
+    }
 
-        return $this->entryPoint;
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessageRegExp #You must first create the singleton instance with createInstance().#
+     */
+    public function testGetInstanceFailure()
+    {
+        EntryPoint::getInstance();
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessageRegExp #Unable to create a SugarCRM\\EntryPoint more than once.#
+     */
+    public function testCreateInstanceFailure()
+    {
+        $this->getEntryPointInstance();
+        EntryPoint::createInstance(new NullLogger, new Application('/foo'), '1');
     }
 
     public function testGettersSetters()
     {
-        $entryPoint = $this->rightInstanciation();
+        $entryPoint = $this->getEntryPointInstance();
         $logger = $entryPoint->getLogger();
         $this->assertInstanceOf('PSR\Log\LoggerInterface', $logger);
 
-        $sugarDir = $entryPoint->getSugarDir();
-        $this->assertEquals($sugarDir, getenv('sugarDir'));
+
+        $expectedSugarDir = getenv('sugarDir');
+        if ($expectedSugarDir[0] != '/') {
+            $lastCwd = $entryPoint->getLastCwd();
+            $expectedSugarDir = realpath($lastCwd . '/' . $expectedSugarDir);
+        }
+        $sugarDir = $entryPoint->getPath();
+        $this->assertEquals($expectedSugarDir, $sugarDir);
 
         $sugarDB = $entryPoint->getSugarDb();
         $this->assertInstanceOf('\MysqliManager', $sugarDB);
+
+        $this->assertInstanceOf('\Inet\SugarCRM\Application', $entryPoint->getApplication());
 
         $currentUser = $entryPoint->getCurrentUser();
         $this->assertInstanceOf('\User', $currentUser);
@@ -40,23 +67,21 @@ class EntryPointTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('Users', $beansList);
     }
 
-    /** Define a wrong folder: exception thrown
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessageRegExp #Wrong SugarCRM folder: /foo#
-     */
-    public function testWrongInstanciationBadFolder()
-    {
-        $logger = new NullLogger;
-        new EntryPoint($logger, '/foo', getenv('sugarUserId'));
-    }
-
     /** Define a wrong user: exception thrown
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessageRegExp /Wrong User ID: foo/
      */
-    public function testWrongInstanciationBadUser()
+    public function testSetBadUser()
     {
-        $logger = new NullLogger;
-        new EntryPoint($logger, getenv('sugarDir'), 'foo');
+        $entryPoint = $this->getEntryPointInstance();
+        $entryPoint->setCurrentUser('foo');
+    }
+
+    public function testGetInstance()
+    {
+        chdir(__DIR__);
+        $entryPoint = $this->getEntryPointInstance();
+        $this->assertEquals($entryPoint->getPath(), getcwd());
+        $this->assertEquals(__DIR__, $entryPoint->getLastCwd());
     }
 }

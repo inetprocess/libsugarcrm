@@ -1,4 +1,7 @@
-<phpunit bootstrap="vendor/autoload.php">
+<phpunit
+  bootstrap="vendor/autoload.php"
+  colors="true"
+  >
   <php>
     <env name="sugarDir" value="../sugarcrm"/>
     <env name="sugarUserId" value="1"/>
@@ -6,8 +9,17 @@
     <ini name="error_reporting" value="30719"/>
   </php>
   <testsuites>
+    <!-- unit tests on EntryPoint must run first because it can be instantiated only once -->
+    <testsuite name="EntryPoint">
+        <file>tests/EntryPointTest.php</file>
+    </testsuite>
     <testsuite name="Inet">
         <directory>tests</directory>
     </testsuite>
   </testsuites>
+ <filter>
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">src</directory>
+    </whitelist>
+  </filter>
 </phpunit>

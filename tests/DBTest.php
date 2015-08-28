@@ -4,7 +4,7 @@ namespace Inet\SugarCRM\Tests;
 use Inet\SugarCRM\EntryPoint;
 use Inet\SugarCRM\DB;
 
-class DBTest extends \PHPUnit_Framework_TestCase
+class DBTest extends SugarTestCase
 {
     private $sugarDB = null;
 
@@ -12,8 +12,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
     {
         if (is_null($this->sugarDB)) {
             // first load a bean
-            $entryPointTest = new EntryPointTest;
-            $entryPoint = $entryPointTest->rightInstanciation();
+            $entryPoint = $this->getEntryPointInstance();
 
             $this->sugarDB = new DB($entryPoint);
             $this->assertInstanceOf('Inet\SugarCRM\DB', $this->sugarDB);
