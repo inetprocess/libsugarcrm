@@ -2,6 +2,10 @@
 .*.sw*
 *~
 
-composer.lock
-phpunit.xml
-vendor
+# Composer
+/composer.lock
+/vendor/
+
+#PHPUnit/Phing
+/phpunit.xml
+/reports/
