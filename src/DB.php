@@ -65,7 +65,7 @@ class DB
      */
     public function tableExists($table)
     {
-        $res = $this->doQuery("SHOW TABLES LIKE '{$table}'");
+        $res = $this->query("SHOW TABLES LIKE '{$table}'");
 
         return (count($res) === 1 ? true : false);
     }
@@ -86,7 +86,7 @@ class DB
      * @param     [type]    $sql       [description]
      * @return    [type]               [description]
      */
-    public function doQuery($sql)
+    public function query($sql)
     {
         $sql = trim($sql);
         if (empty($sql)) {
@@ -103,7 +103,7 @@ class DB
         $res = $this->sugarDb->query($sql, false);
         // Error in Query
         if (!empty($this->sugarDb->database->error)) {
-            throw new \InvalidArgumentException("SQL Error in doQuery: {$this->sugarDb->database->error}");
+            throw new \InvalidArgumentException("SQL Error in query: {$this->sugarDb->database->error}");
         }
 
         // No data to send to the caller

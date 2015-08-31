@@ -107,7 +107,7 @@ use Inet\SugarCRM\DB;
 
 // get the DB Class
 $inetSugarDB = new DB(EntryPoint::getInstance());
-$users = $inetSugarDB->doQuery('SELECT * FROM users');
+$users = $inetSugarDB->query('SELECT * FROM users');
 echo count($users);
 ```
 

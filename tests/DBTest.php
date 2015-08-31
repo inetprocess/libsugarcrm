@@ -52,7 +52,7 @@ class DBTest extends SugarTestCase
     {
         $sugarDB = $this->rightInstanciation();
         $sql = 'SELECT * FROM users WHERE id = 1';
-        $result = $sugarDB->doQuery($sql);
+        $result = $sugarDB->query($sql);
         $this->assertInternalType('array', $result);
         $this->assertCount(1, $result);
     }
@@ -61,7 +61,7 @@ class DBTest extends SugarTestCase
     {
         $sugarDB = $this->rightInstanciation();
         $sql = "SELECT * FROM users WHERE id = 'foo'";
-        $result = $sugarDB->doQuery($sql);
+        $result = $sugarDB->query($sql);
         $this->assertInternalType('array', $result);
         $this->assertEmpty($result);
     }
@@ -70,20 +70,20 @@ class DBTest extends SugarTestCase
     {
         $sugarDB = $this->rightInstanciation();
         $sql = "UPDATE users SET id = 1 WHERE id = 1";
-        $result = $sugarDB->doQuery($sql);
+        $result = $sugarDB->query($sql);
         $this->assertInternalType('bool', $result);
         $this->assertTrue($result);
     }
 
     /** Define a wrong folder: exception thrown
      * @expectedException InvalidArgumentException
-     * @expectedExceptionMessageRegExp #SQL Error in doQuery#
+     * @expectedExceptionMessageRegExp #SQL Error in query#
      */
     public function testDoWrongQuery()
     {
         $sugarDB = $this->rightInstanciation();
         $sql = 'SELECT * FROM foousersfoo WHERE id = 1';
-        $sugarDB->doQuery($sql);
+        $sugarDB->query($sql);
     }
 
     /** Define a wrong folder: exception thrown
@@ -93,6 +93,6 @@ class DBTest extends SugarTestCase
     public function testDoEmptyQuery()
     {
         $sugarDB = $this->rightInstanciation();
-        $sugarDB->doQuery('    ');
+        $sugarDB->query('    ');
     }
 }

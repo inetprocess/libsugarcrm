@@ -426,15 +426,15 @@ class Bean
         // that'll also be useful to get the DBTYPE
         // Main Table
         $tableName = $sugarBean->table_name;
-        $mainTable = $tableFields = $this->db->doQuery("SHOW FULL COLUMNS FROM $tableName");
+        $mainTable = $tableFields = $this->db->query("SHOW FULL COLUMNS FROM $tableName");
 
         // Custom Table
         $tableNameCustom = $sugarBean->table_name . '_cstm';
         // check if table custom exists
-        $tableCustom = $this->db->doQuery("SHOW TABLES LIKE '{$tableNameCustom}';");
+        $tableCustom = $this->db->query("SHOW TABLES LIKE '{$tableNameCustom}';");
         $customTable = array();
         if (!empty($tableCustom)) {
-            $customTable = $customColumns = $this->db->doQuery("SHOW FULL COLUMNS FROM $tableNameCustom");
+            $customTable = $customColumns = $this->db->query("SHOW FULL COLUMNS FROM $tableNameCustom");
             $tableFields = array_merge($tableFields, $customColumns);
         }
 
