@@ -6,6 +6,7 @@
  * SugarCRM Versions 6.5 - 7.6
  *
  * @author Emmanuel Dyan
+ * @author Rémi Sauvat
  * @copyright 2005-2015 iNet Process
  * @package inetprocess/sugarcrm
  * @license GNU General Public License v2.0
