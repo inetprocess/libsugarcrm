@@ -6,7 +6,6 @@
 
     <property name="pkgPHPVersions" value="5.3 -> 5.6" />
     <property name="pkgSugarCRMVersions" value="6.5 - 7.6" />
-    <property name="pkgAuthor" value="Emmanuel Dyan" />
     <property name="pkgCopyright" value="2005-2015 iNet Process" />
     <property name="pkgName" value="inetprocess/sugarcrm" />
     <property name="pkgLicense" value="GNU General Public License v2.0" />
@@ -31,7 +30,6 @@
                 <replaceregexp>
                     <regexp pattern=" \* PHP Version (.*)" replace=" * PHP Version ${pkgPHPVersions}"/>
                     <regexp pattern=" \* SugarCRM Versions (.*)" replace=" * SugarCRM Versions ${pkgSugarCRMVersions}"/>
-                    <regexp pattern=" \* @author (.*)"     replace=" * @author ${pkgAuthor}"/>
                     <regexp pattern=" \* @copyright (.*)"  replace=" * @copyright ${pkgCopyright}"/>
                     <regexp pattern=" \* @package (.*)"    replace=" * @package ${pkgName}"/>
                     <regexp pattern=" \* @license (.*)"    replace=" * @license ${pkgLicense}"/>
