@@ -109,6 +109,8 @@ class EntryPoint
         $instance = new EntryPoint($sugarApp, $sugarUserId);
         $instance->initSugar();
         self::$instance = $instance;
+
+        return self::$instance;
     }
 
     /**
