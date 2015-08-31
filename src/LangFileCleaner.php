@@ -7,8 +7,11 @@
  *
  * @author Rémi Sauvat
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -21,7 +24,6 @@ use Symfony\Component\Finder\Finder;
  */
 class LangFileCleaner
 {
-
     public $sugarApp;
 
     public function __construct(Application $sugarApp)
@@ -63,8 +65,10 @@ class LangFileCleaner
         }
         if (!$found_one) {
             $this->getLogger()->notice('No lang files found to process.');
+
             return false;
         }
+
         return true;
     }
 }

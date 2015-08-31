@@ -8,8 +8,11 @@
  * @author Emmanuel Dyan
  * @author Rémi Sauvat
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -29,7 +32,8 @@ class Application
 
     /**
      * SugarCRM Directory
-     * @var    string
+     *
+     * @var string
      */
     protected $path;
 
@@ -39,7 +43,7 @@ class Application
     protected $config;
 
     /**
-     * @param    string    $path    Path of SugarCrm installation directory.
+     * @param string $path Path of SugarCrm installation directory.
      */
     public function __construct(LoggerInterface $logger, $path)
     {
@@ -49,7 +53,8 @@ class Application
 
     /**
      * Return SugarCRM Path
-     * @return    string
+     *
+     * @return string
      */
     public function getPath()
     {
@@ -63,6 +68,7 @@ class Application
 
     /**
      * Check if the path is a valid sugar installation.
+     *
      * @return true if a sugar_version.php file is present in the path.
      */
     public function isValid()
@@ -83,9 +89,9 @@ class Application
             }
         } catch (SugarException $e) {
         }
+
         return false;
     }
-
 
     /**
      * Reset configuration cache
@@ -97,7 +103,9 @@ class Application
 
     /**
      *  Load SugarCrm configuration into internal cache.
+     *
      *  @param boolean $clearCache If true clear cache to fetch latest version of configuration.
+     *
      *  @return array Cached configuration from SugarCRM
      */
     public function getSugarConfig($clearCache = false)
@@ -120,6 +128,7 @@ class Application
                 throw new SugarException("'$path' is not a valid sugar installation.");
             }
         }
+
         return $this->config;
     }
 
@@ -129,7 +138,9 @@ class Application
      * Optional: db_password, db_host_name, db_port.
      *
      * @param array $params Database configuration options
+     *
      * @return array Normalized array with all options
+     *
      * @throws SugarException if some required options are not present.
      */
     public function normalizeDbParams($params)
@@ -152,7 +163,9 @@ class Application
 
     /**
      * Get the version information from SugarCRM.
+     *
      * @return array Version of sugar instance.
+     *
      * @throws SugarException if the path is not valid.
      */
     public function getVersion()
@@ -174,6 +187,7 @@ class Application
             'build' => $sugar_build,
             'build_timestamp' => $sugar_timestamp,
         );
+
         return $version;
     }
 }

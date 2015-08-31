@@ -7,8 +7,11 @@
  *
  * @author Rémi Sauvat
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -38,6 +41,7 @@ class LangFile
 
     /**
      * Construct a LangFile and parse the contents as php tokens.
+     *
      * @param file Filename of the file to load.
      * @param test_mode If true will try to replicate the original file without any changes.
      */
@@ -57,6 +61,7 @@ class LangFile
         if (! is_array($token)) {
             return array($token, $token, -1);
         }
+
         return $token;
     }
 
@@ -75,6 +80,7 @@ class LangFile
     /**
      * Log a warning if a variable name was already found.
      * Also check for the global or local version of the same variable.
+     *
      * @param var_name Name of the variable to check.
      */
     public function checkVarName($var_name)
@@ -147,7 +153,7 @@ EOS;
                     break;
                 }
             } else {
-                switch($token[self::T_KEY]) {
+                switch ($token[self::T_KEY]) {
                     // Comments and whitespace are allowed anywhere.
                     case T_COMMENT:
                     case T_DOC_COMMENT:
@@ -242,7 +248,9 @@ EOS;
 
     /**
      * Parse all tokens from the file and return them sorted and cleaned.
+     *
      * @param sort If true it will sort the variables.
+     *
      * @return A string with the original file data sorted.
      */
     public function getSortedFile($sort = true)
@@ -259,6 +267,7 @@ EOS;
         }
         $this->var_blocks = array_values($this->var_blocks);
         $blocks = array_merge($this->empty_blocks, $this->var_blocks, $this->end_blocks);
+
         return implode('', $blocks);
     }
 }

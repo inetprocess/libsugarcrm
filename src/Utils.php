@@ -7,8 +7,11 @@
  *
  * @author Emmanuel Dyan
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -23,19 +26,21 @@ class Utils
 {
     /**
      * Prefix that should be set by each class to identify it in logs
-     * @var    string
+     *
+     * @var string
      */
     protected $logPrefix;
     /**
      * Logger, inherits PSR\Log and uses Monolog
-     * @var    Inet\Util\Logger
+     *
+     * @var Inet\Util\Logger
      */
     protected $log;
 
-
     /**
      * Set the LogPrefix to be unique and ask for an Entry Point to SugarCRM
-     * @param    EntryPoint    $entryPoint    Enters the SugarCRM Folder
+     *
+     * @param EntryPoint $entryPoint Enters the SugarCRM Folder
      */
     public function __construct(EntryPoint $entryPoint)
     {
@@ -45,8 +50,10 @@ class Utils
 
     /**
      * Encode a multienum from Sugar
-     * @param     string    $multiselect    MultiEnum from DB
-     * @return    array                     Multienum as Array
+     *
+     * @param string $multiselect MultiEnum from DB
+     *
+     * @return array Multienum as Array
      */
     public function arrayToMultiselect($values)
     {
@@ -69,8 +76,10 @@ class Utils
 
     /**
      * Decode a multienum from Sugar
-     * @param     string    $multiselect    MultiEnum from DB
-     * @return    array                     Multienum as Array
+     *
+     * @param string $multiselect MultiEnum from DB
+     *
+     * @return array Multienum as Array
      */
     public static function multiselectToArray($values)
     {
@@ -88,14 +97,15 @@ class Utils
         return $values;
     }
 
-
     /**
      * Add a label for a specific module in SugarCRM
-     * @param    string    $module
-     * @param    string    $language
-     * @param    string    $label
-     * @param    string    $value
-     * @return   bool
+     *
+     * @param string $module
+     * @param string $language
+     * @param string $label
+     * @param string $value
+     *
+     * @return bool
      */
     public function addLabel($module, $language, $label, $value)
     {
@@ -105,13 +115,14 @@ class Utils
         return $addLabels;
     }
 
-
     /**
      * Add a dropdown in SugarCRM
-     * @param    string    $name        Dropdown's name
-     * @param    array     $values      Values for the dropdown
-     * @param    string    $lang        Language
-     * @return   void
+     *
+     * @param string $name   Dropdown's name
+     * @param array  $values Values for the dropdown
+     * @param string $lang   Language
+     *
+     * @return void
      */
     public function addDropdown($name, array $values, $lang)
     {

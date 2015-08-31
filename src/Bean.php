@@ -7,8 +7,11 @@
  *
  * @author Emmanuel Dyan
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -23,47 +26,55 @@ class Bean
 {
     /**
      * Prefix that should be set by each class to identify it in logs
-     * @var    string
+     *
+     * @var string
      */
     protected $logPrefix;
     /**
      * Logger, inherits PSR\Log and uses Monolog
-     * @var    Inet\Util\Logger
+     *
+     * @var Inet\Util\Logger
      */
     protected $log;
 
     /**
      * SugarCRM User Bean
-     * @var    \User
+     *
+     * @var \User
      */
     protected $currentUser;
 
     /**
      * Beans List for that SugarCRM Instance
-     * @var    array
+     *
+     * @var array
      */
     protected $beanList; // Current Module Name
 
     /**
      * SugarCRM DB Object
-     * @var    Mysqli
+     *
+     * @var Mysqli
      */
     protected $db;
 
     /**
      * List of fields for that SugarCRM modules (multidimensional array: [$module][$lang])
-     * @var    array
+     *
+     * @var array
      */
     protected $moduleFields = array();
     /**
      * List of Relationships for SugarCRM modules (multidimensional array: [$module][$type])
-     * @var    array
+     *
+     * @var array
      */
     protected $moduleRels = array();
 
     /**
      * Number of Loops since I haven't cleaned the memory
-     * @var    integer
+     *
+     * @var integer
      */
     protected $loopWithoutCleaningMemory = 0;
 
@@ -74,8 +85,9 @@ class Bean
 
     /**
      * Set the LogPrefix to be unique and ask for an Entry Point to SugarCRM
-     * @param    EntryPoint    $entryPoint    Enters the SugarCRM Folder
-     * @param    DB            $db            Get the SugarCRM DB and make queries
+     *
+     * @param EntryPoint $entryPoint Enters the SugarCRM Folder
+     * @param DB         $db         Get the SugarCRM DB and make queries
      */
     public function __construct(EntryPoint $entryPoint, DB $db)
     {
@@ -90,7 +102,8 @@ class Bean
 
     /**
      * Get the bean list
-     * @return    array
+     *
+     * @return array
      */
     public function getBeansList()
     {
@@ -99,13 +112,16 @@ class Bean
 
     /**
      * Get a Bean from SugarCRM
-     * @param      string     $module      Module's name
-     * @param      string     $id          UUID
-     * @param      array      $params      list of params
-     * @param      boolean    $deleted
-     * @param      boolean    $useCache
-     * @throws     \InvalidArgumentException
-     * @return     SugarBean               SugarCRM Bean
+     *
+     * @param string  $module   Module's name
+     * @param string  $id       UUID
+     * @param array   $params   list of params
+     * @param boolean $deleted
+     * @param boolean $useCache
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return SugarBean SugarCRM Bean
      */
     public function getBean($module, $id = null, $params = array(), $deleted = true, $useCache = false)
     {
@@ -145,9 +161,11 @@ class Bean
 
     /**
      * Create a new bean (Wrapper for BeanFactory and for old SugarCRM versions)
-     * @param     string     $module     Module's name
-     * @param     boolean    $useCache   Use caches (true implies usage of BeanFactory if the class exists)
-     * @return    \SugarBean
+     *
+     * @param string  $module   Module's name
+     * @param boolean $useCache Use caches (true implies usage of BeanFactory if the class exists)
+     *
+     * @return \SugarBean
      */
     public function newBean($module, $useCache = false)
     {
@@ -160,13 +178,16 @@ class Bean
 
     /**
      * Get a list of records directly from the database
-     * @param      string     $module     Module's name
-     * @param      array      $where
-     * @param      integer    $limit
-     * @param      integer    $offset
-     * @param      integer    $deleted    Get Deleted Records only
-     * @throws     \InvalidArgumentException
-     * @return     array                  List of records found
+     *
+     * @param string  $module  Module's name
+     * @param array   $where
+     * @param integer $limit
+     * @param integer $offset
+     * @param integer $deleted Get Deleted Records only
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return array List of records found
      */
     public function getList($module, $where = array(), $limit = 100, $offset = 0, $deleted = 0)
     {
@@ -192,7 +213,7 @@ class Bean
             $aDeletedBeans = $aDeletedBeans['list'];
             $limit-= count($aDeletedBeans);
         }
-        $this->log->debug($this->logPrefix . '__getList : got ' . count($aDeletedBeans) . " deleted records.");
+        $this->log->debug($this->logPrefix . '__getList : got ' . count($aDeletedBeans) . ' deleted records.');
 
         // Get the non-deleted rows if I have less than limit - deleted retrieved
         $aNotDeletedBeans = array();
@@ -200,7 +221,7 @@ class Bean
             $aNotDeletedBeans = $oBeans->get_list('', $where, $offset, $limit, -1, 0);
             $aNotDeletedBeans = $aNotDeletedBeans['list'];
         }
-        $this->log->debug($this->logPrefix . '__getList : got ' . count($aNotDeletedBeans) . " NOT deleted records.");
+        $this->log->debug($this->logPrefix . '__getList : got ' . count($aNotDeletedBeans) . ' NOT deleted records.');
 
         // Merge everything
         $aBeans = array_merge($aNotDeletedBeans, $aDeletedBeans);
@@ -224,15 +245,17 @@ class Bean
         return $records;
     }
 
-
     /**
      * Update a SugarCRM Bean
-     * @param      \SugarBean         $bean
-     * @param      array              $data           Array of field => value
-     * @param      string             $saveType       Create / update / all
-     * @param      boolean            $newBean        Force it as a new Bean
-     * @throws     \RuntimeException
-     * @return     array                              Return code + Message
+     *
+     * @param \SugarBean $bean
+     * @param array      $data     Array of field => value
+     * @param string     $saveType Create / update / all
+     * @param boolean    $newBean  Force it as a new Bean
+     *
+     * @throws \RuntimeException
+     *
+     * @return array Return code + Message
      *
      */
     public function updateBean(\SugarBean $sugarBean, array $data, $saveType = null, $newBean = false)
@@ -243,16 +266,16 @@ class Bean
         $moduleRels = $this->getModuleRelationships($sugarBean->module_name, 'one');
 
         if (empty($sugarBean->id) && $newBean === false) {
-            throw new \RuntimeException("Received a Bean without ID but declared as an update !");
+            throw new \RuntimeException('Received a Bean without ID but declared as an update !');
         }
 
         // Map values and count how many have really changed
         if ($newBean) {
-            $msg = "Creating a new record.";
+            $msg = 'Creating a new record.';
             $this->log->info($this->logPrefix . $msg);
             $return = array('code' => self::SUGAR_CREATED, 'message' => $msg);
         } else {
-            $msg = "Updating record with ID = " . $sugarBean->id;
+            $msg = 'Updating record with ID = ' . $sugarBean->id;
             $this->log->info($this->logPrefix . $msg);
             $return = array('code' => self::SUGAR_UPDATED, 'message' => $msg);
         }
@@ -278,8 +301,9 @@ class Bean
 
         // Immediately exit if there is nothing to do
         if ($changedValues === 0) {
-            $msg = "Not Saving the bean because the records are identical";
+            $msg = 'Not Saving the bean because the records are identical';
             $this->log->info($this->logPrefix . $msg);
+
             return array('code' => self::SUGAR_NOTCHANGED, 'message' => $msg);
         }
 
@@ -312,25 +336,25 @@ class Bean
                 break;
             case 'create':
                 if ($newBean === true) {
-                    $msg.= "CREATED";
+                    $msg.= 'CREATED';
                     $sugarBean->Save();
                 } else {
                     $msg.= "WON'T SAVE (CREATE ONLY)";
                     $return = array(
                         'code' => self::SUGAR_NOTCHANGED,
-                        'message' => "Some values have changed but not updating because mode = update"
+                        'message' => 'Some values have changed but not updating because mode = update'
                     );
                 }
                 break;
             case 'update':
                 if ($newBean === false) {
-                    $msg.= "UPDATED";
+                    $msg.= 'UPDATED';
                     $sugarBean->Save();
                 } else {
                     $msg.= "WON'T SAVE (UPDATE ONLY)";
                     $return = array(
                         'code' => self::SUGAR_NOTCHANGED,
-                        'message' => "Not creating because mode = update"
+                        'message' => 'Not creating because mode = update'
                     );
                 }
                 break;
@@ -356,11 +380,14 @@ class Bean
 
     /**
      * Search a bean from a specific module and with WHERE criteras
-     * @param     string     $module          Sugar's Module name
-     * @param     array      $searchFields    List of fields where to search with their value
-     * @param     boolean    $deleted         Search for deleted record
-     * @throws    \Exception|\RuntimeException
-     * @return    array                       List of Records
+     *
+     * @param string  $module       Sugar's Module name
+     * @param array   $searchFields List of fields where to search with their value
+     * @param boolean $deleted      Search for deleted record
+     *
+     * @throws \Exception|\RuntimeException
+     *
+     * @return array List of Records
      */
     public function searchBeans($module, array $searchFields, $deleted = 0)
     {
@@ -401,17 +428,21 @@ class Bean
 
     /**
      * Get the list of fields for a specific module
-     * @param     string     $module                              SugarCRM Module's name
-     * @param     string     $lang                                Language (else FR by default)
-     * @param     boolean    $getUnusedDbFields                   Also find the fields in DB and not in Sugar
-     * @throws    \InvalidArgumentException|\RuntimeException
-     * @return    array                                           List Of fields
+     *
+     * @param string  $module            SugarCRM Module's name
+     * @param string  $lang              Language (else FR by default)
+     * @param boolean $getUnusedDbFields Also find the fields in DB and not in Sugar
+     *
+     * @throws \InvalidArgumentException|\RuntimeException
+     *
+     * @return array List Of fields
      */
     public function getModuleFields($module, $lang = 'fr_FR', $getUnusedDbFields = false)
     {
         // Check in cache
         if (isset($this->moduleFields[$module][$lang])) {
             $this->log->debug($this->logPrefix . 'Got Fields for this module in cache');
+
             return $this->moduleFields[$module][$lang];
         }
 
@@ -548,19 +579,22 @@ class Bean
         return $moduleInfoFields;
     }
 
-
     /**
      * Get relationships for a specific module
-     * @param     string    $module           SugarCRM Module's name
-     * @param     string    $type             Could be either 'all' or 'one'. One will give only the rels as "fields"
-     * @throws    \InvalidArgumentException
-     * @return    array                       List of relationships
+     *
+     * @param string $module SugarCRM Module's name
+     * @param string $type   Could be either 'all' or 'one'. One will give only the rels as "fields"
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return array List of relationships
      */
     public function getModuleRelationships($module, $type = 'all')
     {
         // Check in cache
         if (isset($this->moduleRels[$module][$type])) {
             $this->log->debug($this->logPrefix . 'Got rels for this module in cache');
+
             return $this->moduleRels[$module][$type];
         }
 
@@ -590,7 +624,6 @@ class Bean
                 $relName = $props['name'];
             }
 
-
             // I am in a many to One, ignore other
             if ($type == 'one' && $relName == $relationship->relationship_name) {
                 continue;
@@ -619,11 +652,14 @@ class Bean
 
    /**
      * Count Records for a Sugar Module
-     * @param     string    $module            SugarCRM Module's Name
-     * @param     array     $whereCriteras     Search Criteras + values
-     * @param     boolean   $deleted           Take deleted records into account
-     * @throws    \InvalidArgumentException
-     * @return    integer                      Total number of records
+     *
+     * @param string  $module        SugarCRM Module's Name
+     * @param array   $whereCriteras Search Criteras + values
+     * @param boolean $deleted       Take deleted records into account
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return integer Total number of records
      */
     public function countRecords($module, array $whereCriteras = array(), $deleted = false)
     {
@@ -634,7 +670,7 @@ class Bean
         // build the where
         $where = ($deleted ? 'WHERE 1 = 1' : 'WHERE deleted = 0');
         if (!empty($whereCriteras)) {
-            $where.= ' AND ' . implode(" AND ", $whereCriteras);
+            $where.= ' AND ' . implode(' AND ', $whereCriteras);
         }
         $this->log->info($this->logPrefix . "Going to count the record with '{$where}'.");
 
@@ -654,13 +690,14 @@ class Bean
         return (int)$countRes;
     }
 
-
-
     /**
      * Returns the table's name for a module
-     * @param     string    $module    Module's name
-     * @throws    \InvalidArgumentException
-     * @return    string               Returns the table name
+     *
+     * @param string $module Module's name
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return string Returns the table name
      */
     public function getModuleTable($module)
     {
@@ -673,12 +710,14 @@ class Bean
         return $sugarBean->table_name;
     }
 
-
     /**
      * Returns the custom table's name for a module
-     * @param     string    $module    Module's name
-     * @throws    \InvalidArgumentException
-     * @return    string               Returns the table name
+     *
+     * @param string $module Module's name
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return string Returns the table name
      */
     public function getModuleCustomTable($module)
     {
@@ -691,11 +730,11 @@ class Bean
         return $sugarBean->get_custom_table_name();
     }
 
-
     /**
      * Check if I have to clean the memory or not. That should be call by the
      * functions that do a Save or any kind of retrieve (getBean, get_list ...)
-     * @return    boolean      Operation was succesful
+     *
+     * @return boolean Operation was succesful
      */
     private function cleanMemory()
     {
@@ -704,12 +743,12 @@ class Bean
             BeanFactoryCache::clearCache();
             $this->loopWithoutCleaningMemory = 0;
             $msg = "Memory Cleaned because usage is around {$usedMemory} Mib. ";
-            $msg.= "Collected " . gc_collect_cycles()  . " cycles.";
+            $msg.= 'Collected ' . gc_collect_cycles()  . ' cycles.';
             $this->log->warning($this->logPrefix . $msg);
-
         } else {
             $this->loopWithoutCleaningMemory++;
         }
+
         return true;
     }
 }

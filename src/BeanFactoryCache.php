@@ -7,8 +7,11 @@
  *
  * @author Emmanuel Dyan
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -22,7 +25,8 @@ class BeanFactoryCache extends \BeanFactory
 {
     /**
      * Taken from SugarCRM BeanFactory. Allows to clean the beans in cache.
-     * @return    void
+     *
+     * @return void
      */
     public static function clearCache()
     {
@@ -33,7 +37,8 @@ class BeanFactoryCache extends \BeanFactory
 
     /**
      * Just in case somebody needs to get the loaded beans
-     * @return    array    Array of \SugarBean
+     *
+     * @return array Array of \SugarBean
      */
     public static function getLoadedBeans()
     {

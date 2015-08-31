@@ -7,14 +7,16 @@
  *
  * @author Rémi Sauvat
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
 namespace Inet\SugarCRM;
 
-use Inet\SugarCRM\Application;
 use Inet\SugarCRM\Util\Filesystem;
 
 class Installer
@@ -93,7 +95,7 @@ class Installer
      */
     public function extract()
     {
-        $this->getLogger()->info("Extracting {$this->source} into " . $this->getPath() . "...");
+        $this->getLogger()->info("Extracting {$this->source} into " . $this->getPath() . '...');
         if (!is_dir($this->getPath()) or !$this->fs->isEmpty($this->getPath())) {
             throw new InstallerException(
                 "The target path {$this->getPath()} is not a directory or is not empty when extracting the archive."
@@ -140,8 +142,7 @@ class Installer
         if (!$zip->close()) {
             throw new InstallerException("Unable to close zip {$this->source}.");
         }
-        $this->getLogger()->info("Extraction OK.");
-
+        $this->getLogger()->info('Extraction OK.');
     }
 
     public function copyConfigSi()
@@ -152,17 +153,18 @@ class Installer
 
     public function deleteConfigSi()
     {
-        $this->getLogger()->info("Deleting configuration file ".$this->getConfigTarget().'.');
+        $this->getLogger()->info('Deleting configuration file '.$this->getConfigTarget().'.');
         $this->fs->remove($this->getConfigTarget());
     }
 
     /**
      * Call the url to run the Sugar silent install.
+     *
      * @param timeout Default to 5 minutes.
      */
     public function callUrl($timeout = 300)
     {
-        $real_url = $this->url . "/install.php?goto=SilentInstall&cli=true";
+        $real_url = $this->url . '/install.php?goto=SilentInstall&cli=true';
         $this->getLogger()->notice("Calling {$real_url} to install Sugar.");
         $context = stream_context_create(
             array(
@@ -173,7 +175,7 @@ class Installer
         );
         $h = fopen($real_url, 'r', false, $context);
         if ($h === false) {
-            throw new InstallerException("Could not connect to the specified url.");
+            throw new InstallerException('Could not connect to the specified url.');
         }
 
         $installer_res = '';
@@ -182,7 +184,7 @@ class Installer
         }
         $metadata = stream_get_meta_data($h);
         if (fclose($h) === false) {
-            throw new InstallerException("Unable to close the url.");
+            throw new InstallerException('Unable to close the url.');
         }
 
         if ($metadata['timed_out']) {
@@ -192,23 +194,24 @@ class Installer
         }
         // find the bottle message
         if (preg_match('/<bottle>(.*)<\/bottle>/s', $installer_res, $msg) === 1) {
-            $this->getLogger()->info("The web installer was successfully completed.");
+            $this->getLogger()->info('The web installer was successfully completed.');
             $this->getLogger()->info("Web installer: {$msg[1]}");
         } elseif (preg_match('/Exit (.*)/s', $installer_res, $msg)) {
             $this->getLogger()->info("Web installer: {$msg[1]}");
             throw new InstallerException(
-                "The web installer failed. Check your config_si.php file."
+                'The web installer failed. Check your config_si.php file.'
             );
         } else {
             $this->getLogger()->debug("Web installer: {$installer_res}");
             throw new InstallerException(
-                "The web installer failed and return an unknown error. Check the install.log file on Sugar."
+                'The web installer failed and return an unknown error. Check the install.log file on Sugar.'
             );
         }
     }
 
     /**
      * Run the complete installation process.
+     *
      * @param force If true then remove install directory first.
      */
     public function run($force = false)
@@ -237,7 +240,6 @@ class Installer
         $this->copyConfigSi();
         $this->callUrl();
         $this->deleteConfigSi();
-        $this->getLogger()->notice("Installation complete.");
-
+        $this->getLogger()->notice('Installation complete.');
     }
 }

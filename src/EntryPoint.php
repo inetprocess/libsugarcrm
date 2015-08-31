@@ -8,8 +8,11 @@
  * @author Emmanuel Dyan
  * @author Rémi Sauvat
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -24,60 +27,70 @@ class EntryPoint
 {
     /**
      * Prefix that should be set by each class to identify it in logs
-     * @var    string
+     *
+     * @var string
      */
     protected $logPrefix;
 
     /**
      * SugarCRM Application
-     * @var    string
+     *
+     * @var string
      */
     protected $sugarApp;
     /**
      * Last Current working directory before changing to getPath()
-     * @var    string
+     *
+     * @var string
      */
     protected $lastCwd;
     /**
      * SugarCRM User Id to connect with
-     * @var    string
+     *
+     * @var string
      */
     protected $sugarUserId;
     /**
      * SugarCRM User Bean
-     * @var    \User
+     *
+     * @var \User
      */
     protected $currentUser;
 
     /**
      * SugarCRM DB Object
-     * @var    \MySQLi
+     *
+     * @var \MySQLi
      */
     private $sugarDb;
 
     /**
      * List of Beans from SugarCRM as "$key [singular] => $value [plural]"
-     * @var    array
+     *
+     * @var array
      */
     private $beanList = array();
 
     /**
      * Globals variables defined (save it because it's lost sometimes)
-     * @var    array
+     *
+     * @var array
      */
     private $globals = array();
 
     /**
      * Singleton pattern instance
+     *
      * @var Inet\SugarCrm\EntryPoint
      */
     private static $instance = null;
 
     /**
      * Constructor, to get the Container, then the log and config
-     * @param        LoggerInterface    $log             Allow any logger extended from PSR\Log
-     * @param        Application        $sugarApp
-     * @param        string             $sugarUserId
+     *
+     * @param LoggerInterface $log         Allow any logger extended from PSR\Log
+     * @param Application     $sugarApp
+     * @param string          $sugarUserId
      */
     private function __construct(Application $sugarApp, $sugarUserId)
     {
@@ -97,10 +110,12 @@ class EntryPoint
 
     /**
      * Create the singleton instance only if it doesn't exists already.
-     * @param        LoggerInterface    $log             Allow any logger extended from PSR\Log
-     * @param        Application        $sugarApp
-     * @param        string             $sugarUserId
-     * @throws      \RuntimeException
+     *
+     * @param LoggerInterface $log         Allow any logger extended from PSR\Log
+     * @param Application     $sugarApp
+     * @param string          $sugarUserId
+     *
+     * @throws \RuntimeException
      */
     public static function createInstance(Application $sugarApp, $sugarUserId)
     {
@@ -116,8 +131,10 @@ class EntryPoint
 
     /**
      * Returns EntryPoint singleton instance.
+     *
      * @throws \RuntimeException if the instance is not initiated.
-     * @return    LoggerInterface
+     *
+     * @return LoggerInterface
      */
     public static function getInstance()
     {
@@ -126,12 +143,14 @@ class EntryPoint
         }
         self::$instance->setGlobalsFromSugar();
         self::$instance->chdirToSugarDir();
+
         return self::$instance;
     }
 
     /**
      * Alias for $this->getApplication()->getLogger()
-     * @return    LoggerInterface
+     *
+     * @return LoggerInterface
      */
     public function getLogger()
     {
@@ -140,7 +159,8 @@ class EntryPoint
 
     /**
      * Returns the Sugar Application used by this EntryPoint
-     * @return    string
+     *
+     * @return string
      */
     public function getApplication()
     {
@@ -149,6 +169,7 @@ class EntryPoint
 
     /**
      * Alias for $this->getApplication()->getPath()
+     *
      * @return string Sugar path.
      */
     public function getPath()
@@ -158,7 +179,8 @@ class EntryPoint
 
     /**
      * Returns the last working directory before moving to getPath()
-     * @return    string
+     *
+     * @return string
      */
     public function getLastCwd()
     {
@@ -167,7 +189,8 @@ class EntryPoint
 
     /**
      * Returns the SugarDb of this instance
-     * @return    mysqli
+     *
+     * @return mysqli
      */
     public function getSugarDb()
     {
@@ -176,7 +199,8 @@ class EntryPoint
 
     /**
      * Returns the Logged In user
-     * @return    User
+     *
+     * @return User
      */
     public function getCurrentUser()
     {
@@ -185,6 +209,7 @@ class EntryPoint
 
     /**
      * Set the SugarCRM current user. This user will be used for all remaining operation.
+     *
      * @param string $sugarUserId Database id of the sugar crm user.
      */
     public function setCurrentUser($sugarUserId)
@@ -202,7 +227,8 @@ class EntryPoint
 
     /**
      * Returns the List Of Beans
-     * @return    array
+     *
+     * @return array
      */
     public function getBeansList()
     {
@@ -225,6 +251,7 @@ class EntryPoint
 
     /**
      * Move to Sugar directory.
+     *
      * @throws \InvalidArgumentException if the folder is not a valid sugarcrm installation folder.
      */
     private function chdirToSugarDir()
@@ -283,9 +310,11 @@ class EntryPoint
      * Set a group of variables as GLOBALS. It's needed for SugarCRM
      * I also have to keep everything in a static variable as the GLOBALS could be reset by
      * another script (I am thinking of PHPUnit)
-     * @param     array     $variables          [description]
-     * @param     array     $ignoreVariables    [description]
-     * @return    [type]                        [description]
+     *
+     * @param array $variables       [description]
+     * @param array $ignoreVariables [description]
+     *
+     * @return [type] [description]
      */
     private function defineVariablesAsGlobal(array $variables, array $ignoreVariables)
     {

@@ -7,8 +7,11 @@
  *
  * @author Emmanuel Dyan
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -24,31 +27,35 @@ class DB
 {
     /**
      * Prefix that should be set by each class to identify it in logs
-     * @var    string
+     *
+     * @var string
      */
     protected $logPrefix;
     /**
      * Logger, inherits PSR\Log and uses Monolog
-     * @var    Inet\Util\Logger
+     *
+     * @var Inet\Util\Logger
      */
     protected $log;
 
     /**
      * SugarCRM DB Utils
-     * @var    Inet\SugarCRM\DB
+     *
+     * @var Inet\SugarCRM\DB
      */
     protected $sugarDb;
 
     /**
      * Contains the list of numeric fields in SugaRCRM
-     * @var    array
+     *
+     * @var array
      */
     private static $numericFields = array('double', 'int', 'currency');
 
-
     /**
      * Set the LogPrefix to be unique and ask for an Entry Point to SugarCRM
-     * @param    EntryPoint    $entryPoint    Enters the SugarCRM Folder
+     *
+     * @param EntryPoint $entryPoint Enters the SugarCRM Folder
      */
     public function __construct(EntryPoint $entryPoint)
     {
@@ -60,8 +67,10 @@ class DB
 
     /**
      * Check if a Table exists
-     * @param     [type]    $sql       [description]
-     * @return    [type]               [description]
+     *
+     * @param [type] $sql [description]
+     *
+     * @return [type] [description]
      */
     public function tableExists($table)
     {
@@ -72,19 +81,22 @@ class DB
 
     /**
      * Escape a value with MySQLi tools
-     * @param     string    $string    Value
-     * @return    string               Escaped Value
+     *
+     * @param string $string Value
+     *
+     * @return string Escaped Value
      */
     public function escape($string)
     {
         return $this->sugarDb->database->escape_string($string);
     }
 
-
     /**
      * Do a Query (any)
-     * @param     [type]    $sql       [description]
-     * @return    [type]               [description]
+     *
+     * @param [type] $sql [description]
+     *
+     * @return [type] [description]
      */
     public function query($sql)
     {
@@ -127,7 +139,8 @@ class DB
 
     /**
      * Return the numeric fields defined in SugarCRM
-     * @return    Array    Array of fields types
+     *
+     * @return Array Array of fields types
      */
     public static function getNumericFields()
     {

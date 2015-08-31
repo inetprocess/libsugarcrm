@@ -7,8 +7,11 @@
  *
  * @author Rémi Sauvat
  * @copyright 2005-2015 iNet Process
+ *
  * @package inetprocess/sugarcrm
+ *
  * @license GNU General Public License v2.0
+ *
  * @link http://www.inetprocess.com
  */
 
@@ -24,7 +27,9 @@ class Filesystem extends BaseFS
     /**
      * Test is files or directories passed as arguments are empty.
      * Only valid for regular files and directories.
+     *
      * @param mixed $files String or array of strings of path to files and directories.
+     *
      * @return boolean True if all arguments are empty. (Size 0 for files and no children for directories).
      */
     public function isEmpty($files)
@@ -58,6 +63,7 @@ class Filesystem extends BaseFS
                 );
             }
         }
+
         return true;
     }
 }
