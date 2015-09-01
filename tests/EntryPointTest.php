@@ -45,7 +45,7 @@ class EntryPointTest extends SugarTestCase
         $this->assertInstanceOf('PSR\Log\LoggerInterface', $logger);
 
 
-        $expectedSugarDir = getenv('sugarDir');
+        $expectedSugarDir = getenv('SUGARCRM_PATH');
         if ($expectedSugarDir[0] != '/') {
             $lastCwd = $entryPoint->getLastCwd();
             $expectedSugarDir = realpath($lastCwd . '/' . $expectedSugarDir);

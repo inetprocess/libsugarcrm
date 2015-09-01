@@ -3,8 +3,9 @@
   colors="true"
   >
   <php>
-    <env name="sugarDir" value="../sugarcrm"/>
-    <env name="sugarUserId" value="1"/>
+    <env name='SUGARCRM_PATH' value="../sugarcrm"/>
+    <env name='SUGARCRM_CURRENT_USER_ID' value="1"/>
+
     <!-- E_ALL & ~E_STRICT = 30719 -->
     <ini name="error_reporting" value="30719"/>
   </php>
