@@ -81,7 +81,7 @@ class Utils
      *
      * @return array Multienum as Array
      */
-    public static function multiselectToArray($values)
+    public function multiselectToArray($values)
     {
         // Unencode
         $values = unencodeMultienum($values);
@@ -146,5 +146,23 @@ class Utils
         );
 
         $parser->saveDropDown($params);
+    }
+    
+    /**
+     * Get the displayed value for a dropdown in SugarCRM
+     *
+     * @param string $name     Dropdown's name
+     * @param string $lang     Language
+     *
+     * @return array
+     */
+    public function getDropdown($name, $lang = 'fr_FR')
+    {
+        $listStrings = \return_app_list_strings_language($lang);
+        if (!array_key_exists($name, $listStrings)) {
+            return false;
+        }
+        
+        return $listStrings[$name];
     }
 }
