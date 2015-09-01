@@ -6,6 +6,12 @@
     <env name='SUGARCRM_PATH' value="../sugarcrm"/>
     <env name='SUGARCRM_CURRENT_USER_ID' value="1"/>
 
+    <env name='SUGARCRM_DB_USER' value='' />
+    <env name='SUGARCRM_DB_PASSWORD' value='' />
+    <env name='SUGARCRM_DB_NAME' value='' />
+    <env name='SUGARCRM_DB_HOST' value='127.0.0.1' />
+    <env name='SUGARCRM_DB_PORT' value='3306' />
+
     <!-- E_ALL & ~E_STRICT = 30719 -->
     <ini name="error_reporting" value="30719"/>
   </php>
