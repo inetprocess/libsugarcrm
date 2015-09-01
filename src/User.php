@@ -15,7 +15,7 @@
  * @link http://www.inetprocess.com
  */
 
-namespace Inet\User;
+namespace Inet\SugarCRM;
 
 /**
  * SugarCRM User Management

@@ -89,7 +89,7 @@ class Bean
      * @param EntryPoint $entryPoint Enters the SugarCRM Folder
      * @param DB         $db         Get the SugarCRM DB and make queries
      */
-    public function __construct(EntryPoint $entryPoint, DB $db)
+    public function __construct(EntryPoint $entryPoint)
     {
         $this->logPrefix = __CLASS__ . ': ';
         $this->log = $entryPoint->getLogger();
@@ -97,7 +97,7 @@ class Bean
         $this->currentUser = $entryPoint->getCurrentUser();
 
         $this->beanList = $entryPoint->getBeansList();
-        $this->db = $db;
+        $this->db = new DB($entryPoint);
     }
 
     /**
