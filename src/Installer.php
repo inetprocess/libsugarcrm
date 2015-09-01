@@ -18,6 +18,7 @@
 namespace Inet\SugarCRM;
 
 use Inet\SugarCRM\Util\Filesystem;
+use Inet\SugarCRM\Exception\InstallerException;
 
 class Installer
 {

@@ -20,7 +20,7 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testFailSugarPath()
     {
@@ -42,7 +42,7 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testInvalidSugarConfig()
     {
@@ -67,7 +67,7 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testDbMissingDbName()
     {
@@ -79,7 +79,7 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testDbMissingDbUserName()
     {
@@ -104,7 +104,7 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testInvalidVersion()
     {

@@ -19,6 +19,7 @@
 namespace Inet\SugarCRM;
 
 use Psr\Log\LoggerInterface;
+use Inet\SugarCRM\Exception\SugarException;
 
 /**
  * SugarCRM EntryPoint: Enters SugarCRM and set the current_user + all needed variables

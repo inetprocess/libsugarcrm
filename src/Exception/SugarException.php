@@ -15,7 +15,7 @@
  * @link http://www.inetprocess.com
  */
 
-namespace Inet\SugarCrm;
+namespace Inet\SugarCrm\Exception;
 
 class SugarException extends \Exception
 {

@@ -11,7 +11,7 @@ use Psr\Log\NullLogger;
 class EntryPointTest extends SugarTestCase
 {
     /** Define a wrong folder: exception thrown
-     * @expectedException \Inet\SugarCRM\SugarException
+     * @expectedException \Inet\SugarCRM\Exception\SugarException
      * @expectedExceptionMessageRegExp #Unable to find an installed instance of SugarCRM in :/foo#
      */
     public function testWrongInstanciationBadFolder()
