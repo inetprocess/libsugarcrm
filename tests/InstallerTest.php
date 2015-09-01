@@ -56,7 +56,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Inet\SugarCRM\InstallerException
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
      * @expectedExceptionMessageRegExp /is not a directory/
      */
     public function testExtractNotEmpty()
@@ -66,7 +66,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Inet\SugarCRM\InstallerException
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
      * @expectedExceptionMessageRegExp /is not a directory/
      */
     public function testExtractNotDir()
@@ -76,7 +76,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Inet\SugarCRM\InstallerException
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
      * @expectedExceptionMessageRegExp /doesn't exists/
      */
     public function testExtractInvalidSource()
@@ -87,7 +87,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Inet\SugarCRM\InstallerException
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
      * @expectedExceptionMessageRegExp /Unable to open zip/
      */
     public function testExtractInvalidZip()
@@ -133,7 +133,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Inet\SugarCRM\InstallerException
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
      * @expectedExceptionMessageRegExp /Use --force/
      */
     public function testFailedRun()
@@ -150,7 +150,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Inet\SugarCRM\InstallerException
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
      * @expectedExceptionMessageRegExp /Missing or unreadable config_si/
      */
     public function testFailedRunInvalidConfigSi()

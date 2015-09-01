@@ -20,7 +20,7 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testFailSugarPath()
     {
@@ -42,52 +42,12 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testInvalidSugarConfig()
     {
         $sugar = new Application(new NullLogger(), __DIR__ . '/invalid_sugar');
         $sugar->getSugarConfig();
-    }
-
-    public function testDbParamsNormalization()
-    {
-        $dbData = array(
-            'db_name' => 'test_db',
-            'db_user_name' => 'test_user',
-        );
-        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
-        $actual = $sugar->normalizeDbParams($dbData);
-        $expected['db_name'] = 'test_db';
-        $expected['db_user_name'] = 'test_user';
-        $expected['db_password'] = '';
-        $expected['db_host_name'] = 'localhost';
-        $expected['db_port'] = 3306;
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * @expectedException \Inet\SugarCrm\SugarException
-     */
-    public function testDbMissingDbName()
-    {
-        $db_data = array(
-            'db_user_name' => 'test_user',
-        );
-        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
-        $sugar->normalizeDbParams($db_data);
-    }
-
-    /**
-     * @expectedException \Inet\SugarCrm\SugarException
-     */
-    public function testDbMissingDbUserName()
-    {
-        $db_data = array(
-            'db_name' => 'test_db',
-        );
-        $sugar = new Application(new NullLogger(), __DIR__ . '/fake_sugar');
-        $sugar->normalizeDbParams($db_data);
     }
 
     public function testGetVersion()
@@ -104,7 +64,7 @@ class ApplicationTest extends SugarTestCase
     }
 
     /**
-     * @expectedException \Inet\SugarCrm\SugarException
+     * @expectedException \Inet\SugarCrm\Exception\SugarException
      */
     public function testInvalidVersion()
     {

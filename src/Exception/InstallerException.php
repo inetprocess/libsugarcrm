@@ -14,7 +14,7 @@
  *
  * @link http://www.inetprocess.com
  */
-namespace Inet\SugarCRM;
+namespace Inet\SugarCRM\Exception;
 
 class InstallerException extends \RuntimeException
 {

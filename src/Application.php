@@ -19,6 +19,7 @@
 namespace Inet\SugarCRM;
 
 use Psr\Log\LoggerInterface;
+use Inet\SugarCRM\Exception\SugarException;
 
 /**
  * SugarCRM Application Informations
@@ -130,35 +131,6 @@ class Application
         }
 
         return $this->config;
-    }
-
-    /**
-     * Validate and merge with defaults for database configuration.
-     * Required options: db_name, db_user_name
-     * Optional: db_password, db_host_name, db_port.
-     *
-     * @param array $params Database configuration options
-     *
-     * @return array Normalized array with all options
-     *
-     * @throws SugarException if some required options are not present.
-     */
-    public function normalizeDbParams($params)
-    {
-        $defaults = array(
-            'db_password' => '',
-            'db_host_name' => 'localhost',
-            'db_port' => 3306,
-        );
-
-        if (empty($params['db_name'])) {
-            throw new SugarException('Missing configuration parameter "db_name".');
-        }
-        if (empty($params['db_user_name'])) {
-            throw new SugarException('Missing configuration parameter "db_user_name".');
-        }
-
-        return array_merge($defaults, $params);
     }
 
     /**
