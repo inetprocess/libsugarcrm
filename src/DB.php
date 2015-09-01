@@ -20,8 +20,6 @@ namespace Inet\SugarCRM;
 /**
  * SugarCRM DB Wrapper
  *
- * @todo Unit Tests
- * @todo Replace SugarCRM's $db to \PDO ?
  */
 class DB
 {
