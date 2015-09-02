@@ -138,9 +138,9 @@ EOA;
         $sql = $this->meta->generateSqlQueries($diff);
 
         $expected_sql = <<<SQL
-INSERT INTO fields_meta_data (id, name) VALUES ('field4', 'foobar');
-DELETE FROM fields_meta_data WHERE id = 'field1';
-UPDATE fields_meta_data SET name = 'baz' WHERE id = 'field2';
+INSERT INTO `fields_meta_data` (id, name) VALUES ('field4', 'foobar');
+DELETE FROM `fields_meta_data` WHERE id = 'field1';
+UPDATE `fields_meta_data` SET name = 'baz' WHERE id = 'field2';
 
 SQL;
         $this->assertEquals($expected_sql, $sql);

@@ -97,7 +97,7 @@ class Installer
     public function extract()
     {
         $this->getLogger()->info("Extracting {$this->source} into " . $this->getPath() . '...');
-        if (!is_dir($this->getPath()) or !$this->fs->isEmpty($this->getPath())) {
+        if (!is_dir($this->getPath()) || !$this->fs->isEmpty($this->getPath())) {
             throw new InstallerException(
                 "The target path {$this->getPath()} is not a directory or is not empty when extracting the archive."
             );

@@ -123,7 +123,7 @@ class EntryPoint
         if (!is_null(self::$instance)) {
             throw new \RuntimeException('Unable to create a SugarCRM\EntryPoint more than once.');
         }
-        $instance = new EntryPoint($sugarApp, $sugarUserId);
+        $instance = new self($sugarApp, $sugarUserId);
         $instance->initSugar();
         self::$instance = $instance;
 
@@ -261,7 +261,7 @@ class EntryPoint
             throw new SugarException('Unable to find an installed instance of SugarCRM in :' . $this->getPath(), 1);
         }
         $this->lastCwd = realpath(getcwd());
-        @chdir($this->getPath());
+        chdir($this->getPath());
     }
 
     private function loadSugarEntryPoint()

@@ -36,9 +36,33 @@ class QueryFactory
         return $this->pdo;
     }
 
+    public function getIdentifierDelimiter()
+    {
+        switch ($this->getPdo()->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+            case 'mysql':
+                return '`';
+            default:
+                return '"';
+        }
+    }
+
+    public function quoteIdentifier($identifier)
+    {
+        $delimiter = $this->getIdentifierDelimiter();
+        return $delimiter . str_replace($delimiter, "$delimiter$delimiter", $identifier) . $delimiter;
+    }
+
+    public function createSelectAllQuery($table)
+    {
+        $sql = 'SELECT * FROM ';
+        $sql .= $this->quoteIdentifier($table);
+        return new Query($this->getPdo(), $sql);
+    }
+
     public function createInsertQuery($table, $data)
     {
-        $sql = 'INSERT INTO ' . $table;
+        $sql = 'INSERT INTO ';
+        $sql .= $this->quoteIdentifier($table);
         $sql .= ' (' . implode(', ', array_keys($data)) . ')';
         $sql .= ' VALUES';
         $params = array();
@@ -51,14 +75,16 @@ class QueryFactory
 
     public function createDeleteQuery($table, $id)
     {
-        $sql = 'DELETE FROM ' . $table;
+        $sql = 'DELETE FROM ';
+        $sql .= $this->quoteIdentifier($table);
         $sql .= ' WHERE id = :id';
         return new Query($this->getPdo(), $sql, array(':id' => $id));
     }
 
     public function createUpdateQuery($table, $id, $data)
     {
-        $sql = 'UPDATE ' . $table;
+        $sql = 'UPDATE ';
+        $sql .= $this->quoteIdentifier($table);
         $sets = array();
         $params = array();
 

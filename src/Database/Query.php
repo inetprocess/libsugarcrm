@@ -51,6 +51,8 @@ class Query
     /**
      * Interpolate the sql query with the parameters.
      * Do not try to execute this query directly as it can lead to SQL Injection.
+     *
+     * @todo Quote with pdo.
      */
     public function getRawSql()
     {

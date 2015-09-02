@@ -21,7 +21,6 @@ use PDO;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
-use Inet\SugarCRM\Application;
 use Inet\SugarCRM\Exception\SugarException;
 
 /**
@@ -104,8 +103,8 @@ class Metadata
     public function loadFromDb()
     {
         $this->getLogger()->debug('Reading fields_meta_data from DB.');
-        $sql = 'SELECT * FROM ' . self::TABLE_NAME;
-        $res = $this->getPdo()->query($sql);
+        $query = $this->getQueryFactory()->createSelectAllQuery(self::TABLE_NAME);
+        $res = $query->execute();
         $fields = array();
         foreach ($res->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             $fields[$row['id']] = $row;
@@ -205,7 +204,7 @@ class Metadata
     /**
      * Get the sql query string for a query.
      */
-    public function getSqlQuery($query)
+    public function getSqlQuery(Query $query)
     {
         return $query->getRawSql();
     }
