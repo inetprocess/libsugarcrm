@@ -83,7 +83,8 @@ class QueryFactory
 
     public function createUpdateQuery($table, $id, $data)
     {
-        $sql = 'UPDATE ' . $this->quoteIdentifier($table);
+        $sql = 'UPDATE ';
+        $sql .= $this->quoteIdentifier($table);
         $sets = array();
         $params = array();
 
