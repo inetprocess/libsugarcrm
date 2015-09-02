@@ -63,7 +63,8 @@ class QueryFactory
     {
         $sql = 'INSERT INTO ';
         $sql .= $this->quoteIdentifier($table);
-        $sql .= ' (' . implode(', ', array_keys($data)) . ')';
+        $column_names = array_map(array($this, 'quoteIdentifier'), array_keys($data));
+        $sql .= ' (' . implode(', ', $column_names) . ')';
         $sql .= ' VALUES';
         $params = array();
         foreach ($data as $key => $value) {
@@ -89,7 +90,7 @@ class QueryFactory
         $params = array();
 
         foreach ($data as $key => $value) {
-            $sets[] = "$key = :$key";
+            $sets[] = $this->quoteIdentifier($key) . " = :$key";
             $params[":$key"] = $value;
         }
         $sql .= ' SET ' . implode(', ', $sets);

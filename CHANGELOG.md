@@ -1,7 +1,11 @@
 Changelog
 =========
 
-1.X.Y
+0.9.1
+-----
+* Protect column identifiers in INSERT and UPDATE queries with QueryFactory
+
+0.9.0
 -----
 * Add LangFileCleaner class to sort and clean SugarCRM language files and make it easier for VCS
 * Add Installer class to extract and install sugar from a zip file.

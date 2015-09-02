@@ -64,7 +64,7 @@ class QueryFactoryTest extends DatabaseTestCase
 
     public function testInsert()
     {
-        $expected_sql = "INSERT INTO `test` (foo, bar) VALUES (1, 'baz')";
+        $expected_sql = "INSERT INTO `test` (`foo`, `bar`) VALUES (1, 'baz')";
         $qf = new QueryFactory(static::getPdo());
         $query = $qf->createInsertQuery('test', array('foo' => 1, 'bar' => 'baz'));
         $this->assertEquals($expected_sql, $query->getRawSql());
@@ -80,7 +80,7 @@ class QueryFactoryTest extends DatabaseTestCase
 
     public function testUpdate()
     {
-        $expected_sql = "UPDATE `test` SET foo = 1, bar = 'baz' WHERE id = '1'";
+        $expected_sql = "UPDATE `test` SET `foo` = 1, `bar` = 'baz' WHERE id = '1'";
         $qf = new QueryFactory(static::getPdo());
         $query = $qf->createUpdateQuery('test', '1', array('foo' => 1, 'bar' => 'baz'));
         $this->assertEquals($expected_sql, $query->getRawSql());
