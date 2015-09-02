@@ -21,7 +21,6 @@ use PDO;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
-use Inet\SugarCRM\Application;
 use Inet\SugarCRM\Exception\SugarException;
 
 /**
@@ -205,7 +204,7 @@ class Metadata
     /**
      * Get the sql query string for a query.
      */
-    public function getSqlQuery($query)
+    public function getSqlQuery(Query $query)
     {
         return $query->getRawSql();
     }

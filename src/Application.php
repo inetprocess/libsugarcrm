@@ -114,11 +114,11 @@ class Application
         if ($clearCache) {
             $this->clearConfigCache();
         }
-        if ($this->config == null) {
+        if (is_null($this->config)) {
             $path = $this->getPath();
-            if ($this->isValid() and is_file($path . '/config.php')) {
+            if ($this->isValid() && is_file($path . '/config.php')) {
                 require($path . '/config.php');
-                if (!isset($sugar_config) or !is_array($sugar_config)) {
+                if (!isset($sugar_config) || !is_array($sugar_config)) {
                     throw new SugarException("Invalid sugarcrm configuration file at '$path/config.php'");
                 }
                 if (is_file($path . '/config_override.php')) {

@@ -151,7 +151,7 @@ class Bean
                 $bean->disable_row_level_security = true;
             }
             $result = $bean->retrieve($id, $encode, $deleted);
-            if ($result == null) {
+            if (is_null($result)) {
                 return false;
             }
         }
@@ -364,7 +364,8 @@ class Bean
                 break;
             default:
                 $callers = debug_backtrace();
-                $msg = "The type of save is not defined (SugarCRM was called by {$callers[1]['class']}::{$callers[1]['function']})";
+                $msg = "The type of save is not defined "
+                    . "(SugarCRM was called by {$callers[1]['class']}::{$callers[1]['function']})";
                 throw new \RuntimeException($msg);
                 break;
         }
@@ -449,7 +450,9 @@ class Bean
         $sugarBean = $this->getBean($module);
         // Did I retrieve nothing ??
         if ($sugarBean === false) {
-            throw new \InvalidArgumentException("$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'.");
+            throw new \InvalidArgumentException(
+                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
+            );
         }
 
         // Load the fields from each tables (normal and _cstm) to get a diff and show when we have
@@ -552,7 +555,8 @@ class Bean
                         $moduleInfoFields[$fieldName]['options_list'][] = 'LIST NOT FOUND';
                     }
                 } else {
-                    $moduleInfoFields[$fieldName][$sugarAttribute] = $sugarBean->field_name_map[$fieldName][$sugarAttribute];
+                    $moduleInfoFields[$fieldName][$sugarAttribute] = $sugarBean
+                        ->field_name_map[$fieldName][$sugarAttribute];
                 }
             }
         }
@@ -601,7 +605,9 @@ class Bean
         $sugarBean = $this->getBean($module);
         // Did I retrieve nothing ??
         if ($sugarBean === false) {
-            throw new \InvalidArgumentException("$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'.");
+            throw new \InvalidArgumentException(
+                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
+            );
         }
 
         $data = array();
@@ -704,7 +710,9 @@ class Bean
         $sugarBean = $this->getBean($module);
         // Did I retrieve nothing ??
         if ($sugarBean === false) {
-            throw new \InvalidArgumentException("$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'.");
+            throw new \InvalidArgumentException(
+                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
+            );
         }
 
         return $sugarBean->table_name;
@@ -724,7 +732,9 @@ class Bean
         $sugarBean = $this->getBean($module);
         // Did I retrieve nothing ??
         if ($sugarBean === false) {
-            throw new \InvalidArgumentException("$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'.");
+            throw new \InvalidArgumentException(
+                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
+            );
         }
 
         return $sugarBean->get_custom_table_name();

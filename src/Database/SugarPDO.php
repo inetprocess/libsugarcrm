@@ -42,7 +42,7 @@ class SugarPDO extends PDO
     {
         $sugar_config = $this->getApplication()->getSugarConfig();
         if (!array_key_exists('dbconfig', $sugar_config)
-            or !is_array($sugar_config['dbconfig'])
+            || !is_array($sugar_config['dbconfig'])
         ) {
             throw new SugarException('Configuration parameter "db_config" is not an array');
         }
