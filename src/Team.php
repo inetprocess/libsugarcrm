@@ -46,31 +46,31 @@ class Team
     {
         $this->logPrefix = __CLASS__ . ': ';
         $this->log = $entryPoint->getLogger();
-        
+
         $this->sugarBean = new Bean($entryPoint);
     }
-    
+
     /**
      * Returns an array of teams from a team set id
      *
      * @param string $teamSetId   UUID from SugarCRM.
      *
      * @return array              List of teams with metadata
-     */    
+     */
     public function getTeamsFromTeamSet($teamSetId)
     {
         require_once('modules/Teams/TeamSetManager.php');
         $teams = \TeamSetManager::getTeamsFromSet($teamSetId);
-        
+
         // Fetch more details from the team
         foreach ($teams as $key => $team) {
-            $teamFields = $this->sugarBean->getBean('Teams', $team['id'])->fetched_row; 
+            $teamFields = $this->sugarBean->getBean('Teams', $team['id'])->fetched_row;
             $teams[$key] = array_merge($team, $teamFields);
         }
-        
+
         return $teams;
     }
-    
+
     /**
      * Returns an array of members from a team
      *
@@ -80,13 +80,13 @@ class Team
      */
     public function getTeamMembers($teamId)
     {
-        $team = $this->sugarBean->getBean('Teams', $teamId); 
+        $team = $this->sugarBean->getBean('Teams', $teamId);
         $users = $team->get_team_members();
-        
+
         foreach ($users as $key => $user) {
             $users[$key] = $user->fetched_row;
         }
-        
+
         return $users;
     }
 }
