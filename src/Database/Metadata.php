@@ -104,8 +104,8 @@ class Metadata
     public function loadFromDb()
     {
         $this->getLogger()->debug('Reading fields_meta_data from DB.');
-        $sql = 'SELECT * FROM ' . self::TABLE_NAME;
-        $res = $this->getPdo()->query($sql);
+        $query = $this->getQueryFactory()->createSelectAllQuery(self::TABLE_NAME);
+        $res = $query->execute();
         $fields = array();
         foreach ($res->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             $fields[$row['id']] = $row;
