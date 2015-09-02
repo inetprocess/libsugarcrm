@@ -54,13 +54,15 @@ class QueryFactory
 
     public function createSelectAllQuery($table)
     {
-        $sql = 'SELECT * FROM ' . $this->quoteIdentifier($table);
+        $sql = 'SELECT * FROM ';
+        $sql .= $this->quoteIdentifier($table);
         return new Query($this->getPdo(), $sql);
     }
 
     public function createInsertQuery($table, $data)
     {
-        $sql = 'INSERT INTO ' . $this->quoteIdentifier($table);
+        $sql = 'INSERT INTO ';
+        $sql .= $this->quoteIdentifier($table);
         $sql .= ' (' . implode(', ', array_keys($data)) . ')';
         $sql .= ' VALUES';
         $params = array();
@@ -73,7 +75,8 @@ class QueryFactory
 
     public function createDeleteQuery($table, $id)
     {
-        $sql = 'DELETE FROM ' . $this->quoteIdentifier($table);
+        $sql = 'DELETE FROM ';
+        $sql .= $this->quoteIdentifier($table);
         $sql .= ' WHERE id = :id';
         return new Query($this->getPdo(), $sql, array(':id' => $id));
     }
