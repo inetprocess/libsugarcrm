@@ -5,12 +5,18 @@ namespace Inet\SugarCRM\Tests\Sugar;
 // TODO: Test for callUrl
 
 use Psr\Log\NullLogger;
+use Symfony\Component\Filesystem\Filesystem;
 
 use Inet\SugarCRM\Application;
 use Inet\SugarCRM\Installer;
 
 class InstallerTest extends \PHPUnit_Framework_TestCase
 {
+    public function tearDown()
+    {
+        $fs = new Filesystem();
+        $fs->remove(__DIR__ . '/install_sugar');
+    }
     public function newApp($path)
     {
         return new Application(new NullLogger(), $path);
@@ -130,23 +136,9 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
         $this->assertFileNotExists($new_path . '/sugar_version.php');
         $stub->run(true);
         $this->assertFileExists($new_path . '/sugar_version.php');
-    }
-
-    /**
-     * @expectedException Inet\SugarCRM\Exception\InstallerException
-     * @expectedExceptionMessageRegExp /Use --force/
-     */
-    public function testFailedRun()
-    {
-        $new_path = __DIR__ . '/install_sugar';
-        $installer_dir = __DIR__ . '/installer';
-        $installer = new Installer(
-            $this->newApp($new_path),
-            '',
-            $installer_dir . '/Fake_Sugar.zip',
-            $installer_dir . '/config_si.php'
-        );
-        $installer->run();
+        // Last run will fail with the exception
+        $this->setExpectedExceptionRegExp('Inet\SugarCRM\Exception\InstallerException', '/Use --force/');
+        $stub->run();
     }
 
     /**
@@ -157,5 +149,46 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     {
         $installer = new Installer($this->newApp(''), '', '', '');
         $installer->run();
+    }
+
+    /**
+     * @group sugar
+     */
+    public function testInstall()
+    {
+        $this->assertFileExists(
+            getenv('SUGARCRM_PATH'),
+            'Please specify the SUGARCRM_PATH from the environment or phpunit.xml file.'
+        );
+        $this->assertNotEmpty(
+            getenv('SUGARCRM_URL'),
+            'Please specify the SUGARCRM_URL from the environment or phpunit.xml file.'
+        );
+
+        $install_path = getenv('SUGARCRM_PATH') . '/inetprocess_installer';
+        $install_url = getenv('SUGARCRM_URL') . '/inetprocess_installer';
+        $fs = new Filesystem;
+        if ($fs->exists($install_path)) {
+            $fs->remove($install_path);
+        }
+        $fs->mkdir($install_path);
+        $installer = new Installer(
+            $this->newApp($install_path),
+            $install_url,
+            __DIR__ . '/installer/Fake_Sugar.zip',
+            __DIR__ . '/installer/config_si.php'
+        );
+        $installer->run();
+        $this->assertTrue(
+            $installer->getApplication()->isValid(),
+            'The install did not extract the zip archive correctly'
+        );
+        $this->assertTrue(
+            $installer->getApplication()->isInstalled(),
+            'The installer did not perform the sugar installation correctly.'
+        );
+        $sugar_config = $installer->getApplication()->getSugarConfig();
+        $this->assertEquals('UTF-8', $sugar_config['default_export_charset']);
+        $fs->remove($install_path);
     }
 }
