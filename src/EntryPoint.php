@@ -221,7 +221,7 @@ class EntryPoint
         if (empty($current_user)) {
             throw new \InvalidArgumentException('Wrong User ID: ' . $sugarUserId);
         }
-        $this->currentUser = $current_user;
+        $this->currentUser = $GLOBALS['current_user'] = $current_user;
         $this->sugarUserId = $sugarUserId;
         $this->getLogger()->info($this->logPrefix . "Changed current user to {$current_user->full_name}.");
     }
