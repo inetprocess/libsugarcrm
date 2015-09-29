@@ -107,8 +107,7 @@ class DB
         }
 
         $data = array();
-        $sql = preg_replace('/\s+/', ' ', $sql);
-        $this->log->debug($this->logPrefix . 'Query: ' . $sql);
+        $this->log->debug($this->logPrefix . 'Query: ' . preg_replace('/\s+/', ' ', $sql));
 
         $res = $this->sugarDb->query($sql, false);
         // Error in Query
