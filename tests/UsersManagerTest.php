@@ -4,6 +4,7 @@ namespace Inet\SugarCRM\Tests;
 use Inet\SugarCRM\Application;
 use Inet\SugarCRM\EntryPoint;
 use Inet\SugarCRM\UsersManager;
+use Inet\SugarCRM\Exception\UpdateBeanException;
 use Psr\Log\NullLogger;
 
 /**
@@ -73,5 +74,39 @@ class UsersManagerTest extends SugarTestCase
         $sugar = $this->getEntryPointInstance();
         $um = new UsersManager($sugar);
         $um->getUserBeanByName('invalid user');
+    }
+
+    /**
+     * @expectedException Inet\SugarCRM\Exception\UpdateBeanException
+     * @expectedExceptionMessage test
+     */
+    public function testSetActiveException()
+    {
+        $mock = $this->getMock(
+            'Inet\SugarCRM\UsersManager',
+            array('updateUser'),
+            array($this->getEntryPointInstance())
+        );
+        $mock->method('updateUser')
+            ->will($this->throwException(new UpdateBeanException('test', 99)));
+
+        $mock->setActive('test', true);
+    }
+
+    /**
+     * @expectedException Inet\SugarCRM\Exception\UpdateBeanException
+     * @expectedExceptionMessage test
+     */
+    public function testSetAdminException()
+    {
+        $mock = $this->getMock(
+            'Inet\SugarCRM\UsersManager',
+            array('updateUser'),
+            array($this->getEntryPointInstance())
+        );
+        $mock->method('updateUser')
+            ->will($this->throwException(new UpdateBeanException('test', 99)));
+
+        $mock->setAdmin('test', true);
     }
 }

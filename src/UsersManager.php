@@ -18,6 +18,7 @@
 namespace Inet\SugarCRM;
 
 use Inet\SugarCRM\Exception\BeanNotFoundException;
+use Inet\SugarCRM\Exception\UpdateBeanException;
 use Inet\SugarCRM\Bean as BeanManager;
 
 /**
@@ -117,17 +118,29 @@ class UsersManager
 
     public function setActive($userName, $active)
     {
-        $status = $active ? self::STATUS_ACTIVE : self::STATUS_INACTIVE;
-        $this->updateUser($userName, array(
-            'status' => $status,
-        ));
+        try {
+            $status = $active ? self::STATUS_ACTIVE : self::STATUS_INACTIVE;
+            $this->updateUser($userName, array(
+                'status' => $status,
+            ));
+        } catch (UpdateBeanException $e) {
+            if ($e->getCode() !== BeanManager::SUGAR_FIELDS_NOT_MODIFIED) {
+                throw $e;
+            }
+        }
     }
 
     public function setAdmin($userName, $admin)
     {
-        $this->updateUser($userName, array(
-            'is_admin' => intval($admin),
-        ));
+        try {
+            $this->updateUser($userName, array(
+                'is_admin' => intval($admin),
+            ));
+        } catch (UpdateBeanException $e) {
+            if ($e->getCode() !== BeanManager::SUGAR_FIELDS_NOT_MODIFIED) {
+                throw $e;
+            }
+        }
     }
 
     public function setPassword($userName, $password)
