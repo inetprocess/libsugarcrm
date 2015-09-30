@@ -18,6 +18,7 @@
 namespace Inet\SugarCRM;
 
 use Inet\SugarCRM\Exception\BeanNotFoundException;
+use Inet\SugarCRM\Bean as BeanManager;
 
 /**
  * SugarCRM User Management
@@ -55,7 +56,7 @@ class UsersManager
     {
         $this->logPrefix = __CLASS__ . ': ';
         $this->entryPoint = $entryPoint;
-        $this->beansManager = new Bean($entryPoint);
+        $this->beansManager = new BeanManager($entryPoint);
     }
 
     public function getEntryPoint()
@@ -76,15 +77,17 @@ class UsersManager
 
     public function createUser($userName, array $fields = array())
     {
-        $user = $this->getBeansManager()->newBean(self::MODULE_NAME);
-        $user->user_name = $userName;
-        foreach ($fields as $key => $value) {
-            if (property_exists($user, $key)) {
-                $user->$key = $value;
-            }
-        }
-        $user->save();
+        $bm = $this->getBeansManager();
+        $user = $bm->newBean(self::MODULE_NAME);
+        $fields['user_name'] = $userName;
+        $bm->updateBean($user, $fields, BeanManager::MODE_CREATE);
         return $user->id;
+    }
+
+    public function updateUser($userName, array $fields)
+    {
+        $user = $this->getUserBeanByName($userName);
+        $this->getBeansManager()->updateBean($user, $fields, BeanManager::MODE_UPDATE);
     }
 
     public function getUserBeanByName($userName)
@@ -114,16 +117,17 @@ class UsersManager
 
     public function setActive($userName, $active)
     {
-        $user = $this->getUserBeanByName($userName);
-        $user->status = $active ? self::STATUS_ACTIVE : self::STATUS_INACTIVE;
-        $user->save();
+        $status = $active ? self::STATUS_ACTIVE : self::STATUS_INACTIVE;
+        $this->updateUser($userName, array(
+            'status' => $status,
+        ));
     }
 
     public function setAdmin($userName, $admin)
     {
-        $user = $this->getUserBeanByName($userName);
-        $user->is_admin = intval($admin);
-        $user->save();
+        $this->updateUser($userName, array(
+            'is_admin' => intval($admin),
+        ));
     }
 
     public function setPassword($userName, $password)
