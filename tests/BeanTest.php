@@ -115,6 +115,13 @@ class BeanTest extends SugarTestCase
         $this->assertInstanceOf('Account', $account);
         $this->assertEquals('foo', $account->description);
 
+        // Test same update
+        $ret = $bm->updateBean($account, array('description' => 'foo'), BeanManager::MODE_UPDATE);
+        $this->assertEquals(BeanManager::SUGAR_NOTCHANGED, $ret);
+        $account = $bm->getBean('Accounts', $account->id);
+        $this->assertInstanceOf('Account', $account);
+        $this->assertEquals('foo', $account->description);
+
         // Test create with id
         $account = $bm->newBean('Accounts');
         $fields = array(
@@ -131,13 +138,13 @@ class BeanTest extends SugarTestCase
 
     /**
      * @expectedException \Inet\SugarCRM\Exception\UpdateBeanException
-     * @expectedExceptionMessage Not Saving the bean because the records are identical.
+     * @expectedExceptionMessage Error: Won't create an empty bean.
      */
-    public function testUpdateBeanNoChanges()
+    public function testCreateBeanNoChanges()
     {
         $bm = $this->getBeanManager();
         $account = $bm->newBean('Accounts');
-        $bm->updateBean($account, array(), BeanManager::MODE_DRY_RUN);
+        $bm->updateBean($account, array(), BeanManager::MODE_CREATE);
     }
 
     /**

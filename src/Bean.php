@@ -333,18 +333,23 @@ class Bean
      */
     public function updateBean(\SugarBean $sugarBean, array $data, $saveMode)
     {
-        $changedValues = $this->updateBeanFields($sugarBean, $data);
+        $code = self::SUGAR_NOTCHANGED;
 
-        // Immediately exit if there is nothing to do
+        $changedValues = $this->updateBeanFields($sugarBean, $data);
         if ($changedValues === 0) {
+            if ($saveMode & (self::MODE_CREATE | self::MODE_CREATE_WITH_ID)) {
+                $msg = 'Error: Won\'t create an empty bean.';
+                $this->getLogger()->info($this->logPrefix . $msg);
+                throw new UpdateBeanException($msg, self::SUGAR_FIELDS_NOT_MODIFIED);
+            }
+            // Update mode, this is not an error we just notify that nothing changed.
             $msg = 'Not Saving the bean because the records are identical.';
             $this->getLogger()->info($this->logPrefix . $msg);
-            throw new UpdateBeanException($msg, self::SUGAR_FIELDS_NOT_MODIFIED);
+            return $code;
         }
 
         $this->updateBeanFieldsFromCurrentUser($sugarBean);
 
-        $code = self::SUGAR_NOTCHANGED;
 
         if ($saveMode === self::MODE_DRY_RUN) {
             $this->getLogger()->info($this->logPrefix . 'Dry run. Won\'t save anything.');
