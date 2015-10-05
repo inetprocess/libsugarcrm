@@ -326,9 +326,10 @@ class Bean
      * @param array      $data     Array of field => value
      * @param integer    $saveMode DRY_RUN / CREATE / UPDATE / CREATE_WITH_ID
      *
-     * @throws \RuntimeException
+     * @throws Inet\SugarCRM\Exception\UpdateBeanException if trying to create or update a bean
+     * when not in the correct mode. If trying to create an empty bean.
      *
-     * @return array Return code
+     * @return int Return code
      *
      */
     public function updateBean(\SugarBean $sugarBean, array $data, $saveMode)
