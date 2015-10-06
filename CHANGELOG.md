@@ -1,6 +1,11 @@
 Changelog
 =========
 
+(unreleased)
+-----
+* Add UsersManager class.
+* Reworked Bean::updateBean
+
 0.9.1
 -----
 * Protect column identifiers in INSERT and UPDATE queries with QueryFactory

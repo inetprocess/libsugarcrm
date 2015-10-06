@@ -17,6 +17,8 @@
 
 namespace Inet\SugarCRM;
 
+use Inet\SugarCRM\Exception\UpdateBeanException;
+
 /**
  * SugarCRM Beans Tools: search, update, create, etc...
  *
@@ -25,11 +27,29 @@ namespace Inet\SugarCRM;
 class Bean
 {
     /**
+     * Constants for saveMode of updateBean method.
+     */
+    const MODE_DRY_RUN = 0;
+    const MODE_CREATE = 1;
+    const MODE_UPDATE = 2;
+    const MODE_CREATE_WITH_ID = 4;
+
+    /**
+     * Constants for return of updateBean method
+     */
+    const SUGAR_FIELDS_NOT_MODIFIED = -2;
+    const SUGAR_ERROR = -1;
+    const SUGAR_NOTCHANGED = 0;
+    const SUGAR_CREATED = 1;
+    const SUGAR_UPDATED = 2;
+
+    /**
      * Prefix that should be set by each class to identify it in logs
      *
      * @var string
      */
     protected $logPrefix;
+
     /**
      * Logger, inherits PSR\Log and uses Monolog
      *
@@ -78,11 +98,6 @@ class Bean
      */
     protected $loopWithoutCleaningMemory = 0;
 
-    const SUGAR_ERROR = -1;
-    const SUGAR_NOTCHANGED = 0;
-    const SUGAR_CREATED = 1;
-    const SUGAR_UPDATED = 2;
-
     /**
      * Set the LogPrefix to be unique and ask for an Entry Point to SugarCRM
      *
@@ -98,6 +113,11 @@ class Bean
 
         $this->beanList = $entryPoint->getBeansList();
         $this->db = new DB($entryPoint);
+    }
+
+    public function getLogger()
+    {
+        return $this->log;
     }
 
     /**
@@ -167,12 +187,8 @@ class Bean
      *
      * @return \SugarBean
      */
-    public function newBean($module, $useCache = false)
+    public function newBean($module)
     {
-        if ($useCache && class_exists('BeanFactory')) {
-            return \BeanFactory::newBean($module);
-        }
-
         return $this->getBean($module);
     }
 
@@ -191,7 +207,8 @@ class Bean
      */
     public function getList($module, $where = array(), $limit = 100, $offset = 0, $deleted = 0)
     {
-        $this->log->debug($this->logPrefix . "__getList : module = $module | offset = $offset | limit = $limit");
+        $this->getLogger()->debug($this->logPrefix
+            . "__getList : module = $module | offset = $offset | limit = $limit");
 
         $records = array();
         // Get the beans and build the WHERE
@@ -204,7 +221,7 @@ class Bean
         } else {
             $where = '';
         }
-        $this->log->debug($this->logPrefix . "I'll add the where: $where");
+        $this->getLogger()->debug($this->logPrefix . "I'll add the where: $where");
 
         // First the deleted if asked
         $aDeletedBeans = array();
@@ -213,7 +230,7 @@ class Bean
             $aDeletedBeans = $aDeletedBeans['list'];
             $limit-= count($aDeletedBeans);
         }
-        $this->log->debug($this->logPrefix . '__getList : got ' . count($aDeletedBeans) . ' deleted records.');
+        $this->getLogger()->debug($this->logPrefix . '__getList : got ' . count($aDeletedBeans) . ' deleted records.');
 
         // Get the non-deleted rows if I have less than limit - deleted retrieved
         $aNotDeletedBeans = array();
@@ -221,12 +238,14 @@ class Bean
             $aNotDeletedBeans = $oBeans->get_list('', $where, $offset, $limit, -1, 0);
             $aNotDeletedBeans = $aNotDeletedBeans['list'];
         }
-        $this->log->debug($this->logPrefix . '__getList : got ' . count($aNotDeletedBeans) . ' NOT deleted records.');
+        $this->getLogger()->debug($this->logPrefix
+            . '__getList : got ' . count($aNotDeletedBeans) . ' NOT deleted records.');
 
         // Merge everything
         $aBeans = array_merge($aNotDeletedBeans, $aDeletedBeans);
 
-        $this->log->debug($this->logPrefix . '__getList : got ' . count($aBeans) . " records (deleted = $deleted)");
+        $this->getLogger()->debug($this->logPrefix
+            . '__getList : got ' . count($aBeans) . " records (deleted = $deleted)");
         // change the deleted value because it's not the same for getBean
         $deleted = ($deleted == 1 ? false : true);
         foreach ($aBeans as $oBean) {
@@ -240,50 +259,30 @@ class Bean
             $this->cleanMemory();
         }
 
-        $this->log->debug($this->logPrefix . '__getList : Sending back ' . count($records) . ' records');
+        $this->getLogger()->debug($this->logPrefix . '__getList : Sending back ' . count($records) . ' records');
 
         return $records;
     }
 
     /**
-     * Update a SugarCRM Bean
+     * Update fields of a SugarCRM Bean
      *
      * @param \SugarBean $bean
-     * @param array      $data     Array of field => value
-     * @param string     $saveType Create / update / all
-     * @param boolean    $newBean  Force it as a new Bean
+     * @param array      $fields     Array of field name => value
      *
-     * @throws \RuntimeException
-     *
-     * @return array Return code + Message
+     * @return integer Number of changed fields.
      *
      */
-    public function updateBean(\SugarBean $sugarBean, array $data, $saveType = null, $newBean = false)
+    public function updateBeanFields(\SugarBean $sugarBean, array $fields)
     {
         $changedValues = 0;
         $nonEmptyFields = array('date_entered');
         $moduleFields = $this->getModuleFields($sugarBean->module_name);
         $moduleRels = $this->getModuleRelationships($sugarBean->module_name, 'one');
-
-        if (empty($sugarBean->id) && $newBean === false) {
-            throw new \RuntimeException('Received a Bean without ID but declared as an update !');
-        }
-
-        // Map values and count how many have really changed
-        if ($newBean) {
-            $msg = 'Creating a new record.';
-            $this->log->info($this->logPrefix . $msg);
-            $return = array('code' => self::SUGAR_CREATED, 'message' => $msg);
-        } else {
-            $msg = 'Updating record with ID = ' . $sugarBean->id;
-            $this->log->info($this->logPrefix . $msg);
-            $return = array('code' => self::SUGAR_UPDATED, 'message' => $msg);
-        }
-
-        foreach ($data as $field => $value) {
+        foreach ($fields as $field => $value) {
             // It does not exist in Sugar
             if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)) {
-                $this->log->error($this->logPrefix . "$field doesn't exist in Sugar");
+                $this->getLogger()->error($this->logPrefix . "$field doesn't exist in Sugar");
                 continue;
             }
 
@@ -291,92 +290,104 @@ class Bean
             // or I ignore empty values
             if ((isset($sugarBean->$field) && $sugarBean->$field == $value)
               || (in_array($field, $nonEmptyFields) && empty($value))) {
-                $this->log->debug($this->logPrefix . "Skipping $field, values are same or value is empty");
+                $this->getLogger()->debug($this->logPrefix . "Skipping $field, values are same or value is empty");
                 continue;
             }
 
             $sugarBean->$field = $value;
             $changedValues++;
         }
+        return $changedValues;
+    }
 
-        // Immediately exit if there is nothing to do
-        if ($changedValues === 0) {
-            $msg = 'Not Saving the bean because the records are identical';
-            $this->log->info($this->logPrefix . $msg);
+    public function updateBeanFieldsFromCurrentUser(\SugarBean $sugarBean)
+    {
+        $propertiesMapping = array(
+            'assigned_user_id' => 'id',
+            'created_by' => 'id',
+            'team_id' => 'team_id',
+            'team_set_id' => 'team_set_id',
+        );
 
-            return array('code' => self::SUGAR_NOTCHANGED, 'message' => $msg);
-        }
-
-        // If I have data, save the Bean !
-        if (empty($sugarBean->assigned_user_id)) {
-            $sugarBean->assigned_user_id = $this->currentUser->id;
-        }
-        // Define teams only if it's empty
-        if (empty($sugarBean->team_id)) {
-            $sugarBean->team_id = $this->currentUser->team_id;
-            $sugarBean->team_set_id = $this->currentUser->team_set_id;
-        }
-        // check that my created_by is not empty
-        if (empty($sugarBean->created_by)) {
-            $sugarBean->created_by = $this->currentUser->id;
+        foreach ($propertiesMapping as $beanProperty => $userProperty) {
+            if (property_exists($sugarBean, $beanProperty) && empty($sugarBean->$beanProperty)) {
+                $sugarBean->$beanProperty = $this->currentUser->$userProperty;
+            }
         }
         $msg = "Record assigned to id {$sugarBean->assigned_user_id} with team_id {$sugarBean->team_id} ";
         $msg.= "and team_set_id {$sugarBean->team_set_id}";
-        $this->log->info($this->logPrefix . $msg);
+        $this->getLogger()->info($this->logPrefix . $msg);
+    }
 
-        // that's a new record and I have an ID defined
-        if (!empty($sugarBean->id) && $newBean === true) {
-            $sugarBean->new_with_id = 1;
+    /**
+     * Update a SugarCRM Bean
+     *
+     * @param \SugarBean $bean
+     * @param array      $data     Array of field => value
+     * @param integer    $saveMode DRY_RUN / CREATE / UPDATE / CREATE_WITH_ID
+     *
+     * @throws Inet\SugarCRM\Exception\UpdateBeanException if trying to create or update a bean
+     * when not in the correct mode. If trying to create an empty bean.
+     *
+     * @return int Return code
+     *
+     */
+    public function updateBean(\SugarBean $sugarBean, array $data, $saveMode)
+    {
+        $code = self::SUGAR_NOTCHANGED;
+
+        $changedValues = $this->updateBeanFields($sugarBean, $data);
+        if ($changedValues === 0) {
+            if ($saveMode & (self::MODE_CREATE | self::MODE_CREATE_WITH_ID)) {
+                $msg = 'Error: Won\'t create an empty bean.';
+                $this->getLogger()->info($this->logPrefix . $msg);
+                throw new UpdateBeanException($msg, self::SUGAR_FIELDS_NOT_MODIFIED);
+            }
+            // Update mode, this is not an error we just notify that nothing changed.
+            $msg = 'Not Saving the bean because the records are identical.';
+            $this->getLogger()->info($this->logPrefix . $msg);
+            return $code;
         }
 
-        $msg = '';
-        switch ($saveType) {
-            case 'none':
-                $msg.= '[SIMULATION] - ' . ($newBean === true ? 'CREATED' : 'UPDATED');
-                break;
-            case 'create':
-                if ($newBean === true) {
-                    $msg.= 'CREATED';
-                    $sugarBean->Save();
-                } else {
-                    $msg.= "WON'T SAVE (CREATE ONLY)";
-                    $return = array(
-                        'code' => self::SUGAR_NOTCHANGED,
-                        'message' => 'Some values have changed but not updating because mode = update'
-                    );
-                }
-                break;
-            case 'update':
-                if ($newBean === false) {
-                    $msg.= 'UPDATED';
-                    $sugarBean->Save();
-                } else {
-                    $msg.= "WON'T SAVE (UPDATE ONLY)";
-                    $return = array(
-                        'code' => self::SUGAR_NOTCHANGED,
-                        'message' => 'Not creating because mode = update'
-                    );
-                }
-                break;
-            case 'all':
-                $sugarBean->Save();
-                $msg.= 'SAVED';
-                break;
-            default:
-                $callers = debug_backtrace();
-                $msg = "The type of save is not defined "
-                    . "(SugarCRM was called by {$callers[1]['class']}::{$callers[1]['function']})";
-                throw new \RuntimeException($msg);
-                break;
+        $this->updateBeanFieldsFromCurrentUser($sugarBean);
+
+
+        if ($saveMode === self::MODE_DRY_RUN) {
+            $this->getLogger()->info($this->logPrefix . 'Dry run. Won\'t save anything.');
+            return $code;
         }
 
-        $msg.= " the bean with ID {$sugarBean->id} because {$changedValues} value(s) ha(s)ve been changed";
-        $this->log->info($this->logPrefix . $msg);
+        if (empty($sugarBean->id)) {
+            // We have a new Bean
+            if ($saveMode & self::MODE_CREATE) {
+                $code = self::SUGAR_CREATED;
+                $this->getLogger()->info($this->logPrefix . 'Creating a new record.');
+            } else {
+                $msg = 'Won\'t create a new record with an empty id when not in CREATE mode.';
+                $this->getLogger()->info($this->logPrefix . $msg);
+                throw new UpdateBeanException($msg, self::SUGAR_NOTCHANGED);
+            }
+        } else {
+            if ($saveMode & self::MODE_UPDATE) {
+                $code = self::SUGAR_UPDATED;
+                $this->getLogger()->info($this->logPrefix . "Updating record with id '{$sugarBean->id}'.");
+            } elseif ($saveMode & self::MODE_CREATE_WITH_ID) {
+                $sugarBean->new_with_id = 1;
+                $code = self::SUGAR_CREATED;
+                $this->getLogger()->info($this->logPrefix . "Creating new record with id '{$sugarBean->id}'.");
+            } else {
+                $msg = "Will not save record with id '{$sugarBean->id}'. Because not in UPDATE or CREATE_WITH_ID mode.";
+                $this->getLogger()->info($this->logPrefix . $msg);
+                throw new UpdateBeanException($msg, self::SUGAR_NOTCHANGED);
+            }
+        }
 
+        $sugarBean->save();
+        $this->getLogger()->info($this->logPrefix
+            . "Bean with ID {$sugarBean->id} saved because {$changedValues} value(s) ha(s)ve been changed");
         // clean memory
         $this->cleanMemory();
-
-        return $return;
+        return $code;
     }
 
     /**
@@ -419,7 +430,7 @@ class Bean
 
         $where = implode(' AND ', $whereCriteras);
         $msg = "Searching a record from '{$module}' with $where (deleted = {$deleted})";
-        $this->log->info($this->logPrefix . $msg);
+        $this->getLogger()->info($this->logPrefix . $msg);
         $aList = $sugarBean->get_list('', $where, 0, -1, -1, $deleted);
         // Clean Memory
         $this->cleanMemory();
@@ -442,7 +453,7 @@ class Bean
     {
         // Check in cache
         if (isset($this->moduleFields[$module][$lang])) {
-            $this->log->debug($this->logPrefix . 'Got Fields for this module in cache');
+            $this->getLogger()->debug($this->logPrefix . 'Got Fields for this module in cache');
 
             return $this->moduleFields[$module][$lang];
         }
@@ -597,7 +608,7 @@ class Bean
     {
         // Check in cache
         if (isset($this->moduleRels[$module][$type])) {
-            $this->log->debug($this->logPrefix . 'Got rels for this module in cache');
+            $this->getLogger()->debug($this->logPrefix . 'Got rels for this module in cache');
 
             return $this->moduleRels[$module][$type];
         }
@@ -678,7 +689,7 @@ class Bean
         if (!empty($whereCriteras)) {
             $where.= ' AND ' . implode(' AND ', $whereCriteras);
         }
-        $this->log->info($this->logPrefix . "Going to count the record with '{$where}'.");
+        $this->getLogger()->info($this->logPrefix . "Going to count the record with '{$where}'.");
 
         // shot the query
         $sql = "SELECT * FROM {$bean->table_name} $where";
@@ -690,7 +701,7 @@ class Bean
         }
 
         if ($countRes === 0) {
-            $this->log->info($this->logPrefix . "Query '$sql' gave 0 result.");
+            $this->getLogger()->info($this->logPrefix . "Query '$sql' gave 0 result.");
         }
 
         return (int)$countRes;
@@ -754,7 +765,7 @@ class Bean
             $this->loopWithoutCleaningMemory = 0;
             $msg = "Memory Cleaned because usage is around {$usedMemory} Mib. ";
             $msg.= 'Collected ' . gc_collect_cycles()  . ' cycles.';
-            $this->log->warning($this->logPrefix . $msg);
+            $this->getLogger()->warning($this->logPrefix . $msg);
         } else {
             $this->loopWithoutCleaningMemory++;
         }
