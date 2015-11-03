@@ -38,7 +38,6 @@ class Bean
      * Constants for return of updateBean method
      */
     const SUGAR_FIELDS_NOT_MODIFIED = -2;
-    const SUGAR_ERROR = -1;
     const SUGAR_NOTCHANGED = 0;
     const SUGAR_CREATED = 1;
     const SUGAR_UPDATED = 2;
@@ -281,7 +280,9 @@ class Bean
         $moduleRels = $this->getModuleRelationships($sugarBean->module_name, 'one');
         foreach ($fields as $field => $value) {
             // It does not exist in Sugar
-            if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)) {
+            if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)
+              && !isset($sugarBean->$field1)
+            ) {
                 $this->getLogger()->error($this->logPrefix . "$field doesn't exist in Sugar");
                 continue;
             }
@@ -338,7 +339,7 @@ class Bean
 
         $changedValues = $this->updateBeanFields($sugarBean, $data);
         if ($changedValues === 0) {
-            if ($saveMode & (self::MODE_CREATE | self::MODE_CREATE_WITH_ID)) {
+            if (!($saveMode & self::MODE_UPDATE)) {
                 $msg = 'Error: Won\'t create an empty bean.';
                 $this->getLogger()->info($this->logPrefix . $msg);
                 throw new UpdateBeanException($msg, self::SUGAR_FIELDS_NOT_MODIFIED);
