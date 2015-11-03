@@ -281,7 +281,7 @@ class Bean
         foreach ($fields as $field => $value) {
             // It does not exist in Sugar
             if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)
-              && !isset($sugarBean->$field1)
+              && !array_key_exists($field, $sugarBean->field_name_map)
             ) {
                 $this->getLogger()->error($this->logPrefix . "$field doesn't exist in Sugar");
                 continue;
