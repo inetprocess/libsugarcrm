@@ -289,7 +289,7 @@ class Bean
 
             // Field value and new value are the same
             // or I ignore empty values
-            if ((isset($sugarBean->$field) && $sugarBean->$field == $value)
+            if ((isset($sugarBean->$field) && $sugarBean->$field == htmlspecialchars($value, ENT_QUOTES))
               || (in_array($field, $nonEmptyFields) && empty($value))) {
                 $this->getLogger()->debug($this->logPrefix . "Skipping $field, values are same or value is empty");
                 continue;
@@ -298,6 +298,7 @@ class Bean
             $sugarBean->$field = $value;
             $changedValues++;
         }
+
         return $changedValues;
     }
 
