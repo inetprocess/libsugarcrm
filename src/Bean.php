@@ -98,6 +98,13 @@ class Bean
     protected $loopWithoutCleaningMemory = 0;
 
     /**
+     * Last ID that has been updated or created via updateBean
+     * @var    string
+     */
+    protected $lastUpdatedId = null;
+
+
+    /**
      * Set the LogPrefix to be unique and ask for an Entry Point to SugarCRM
      *
      * @param EntryPoint $entryPoint Enters the SugarCRM Folder
@@ -296,6 +303,7 @@ class Bean
             }
 
             $sugarBean->$field = $value;
+            $this->getLogger()->debug($this->logPrefix . "Saving $field, value has changed");
             $changedValues++;
         }
 
@@ -338,6 +346,11 @@ class Bean
     {
         $code = self::SUGAR_NOTCHANGED;
 
+        // Save my ID
+        if (!empty($sugarBean->id)) {
+            $this->lastUpdatedId = $sugarBean->id;
+        }
+
         $changedValues = $this->updateBeanFields($sugarBean, $data);
         if ($changedValues === 0) {
             if (!($saveMode & self::MODE_UPDATE)) {
@@ -348,6 +361,7 @@ class Bean
             // Update mode, this is not an error we just notify that nothing changed.
             $msg = 'Not Saving the bean because the records are identical.';
             $this->getLogger()->info($this->logPrefix . $msg);
+
             return $code;
         }
 
@@ -385,12 +399,28 @@ class Bean
         }
 
         $sugarBean->save();
-        $this->getLogger()->info($this->logPrefix
-            . "Bean with ID {$sugarBean->id} saved because {$changedValues} value(s) ha(s)ve been changed");
+
+        // save my new ID
+        $this->lastUpdatedId = $sugarBean->id;
+
+        $msg = "Bean with ID {$sugarBean->id} saved because {$changedValues} value(s) ha(s)ve been changed";
+        $this->getLogger()->info($this->logPrefix . $msg);
+
         // clean memory
         $this->cleanMemory();
+
         return $code;
     }
+
+    /**
+     * Return the last written ID by updateBean
+     * @return    string    UUID (or empty)
+     */
+    public function getLastUpdatedId()
+    {
+        return $this->lastUpdatedId;
+    }
+
 
     /**
      * Search a bean from a specific module and with WHERE criteras
