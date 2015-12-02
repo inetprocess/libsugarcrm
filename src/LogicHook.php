@@ -23,7 +23,6 @@ use Inet\SugarCRM\Exception\BeanNotFoundException;
 /**
  * SugarCRM Logic Hooks Management
  *
- * @todo Unit Tests
  */
 class LogicHook
 {
@@ -40,7 +39,7 @@ class LogicHook
     protected $entryPoint;
 
     /**
-     * Logic Hooks Name defined in Sugar 7.6
+     * Logic Hooks defined in Sugar 7.6 (from the documentation, except *_relationship_update)
      */
     protected $modulesLogicHooksDef = array(
         'after_retrieve' => 'Executes after a record has been retrieved from the database.',
