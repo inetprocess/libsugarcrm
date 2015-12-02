@@ -784,6 +784,28 @@ class Bean
     }
 
     /**
+     * Returns the module directory
+     *
+     * @param string $module Module's name
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return string Returns the module directory
+     */
+    public function getModuleDirectory($module)
+    {
+        $sugarBean = $this->getBean($module);
+        // Did I retrieve nothing ??
+        if ($sugarBean === false) {
+            throw new \InvalidArgumentException(
+                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
+            );
+        }
+
+        return $sugarBean->module_dir;
+    }
+
+    /**
      * Check if I have to clean the memory or not. That should be call by the
      * functions that do a Save or any kind of retrieve (getBean, get_list ...)
      *
