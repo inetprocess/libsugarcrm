@@ -53,6 +53,8 @@ class LogicHook
 
         'before_relationship_add' => 'Executes before a relationship has been added between two records.',
         'after_relationship_add' => 'Executes after a relationship has been added between two records.',
+        'before_relationship_update' => 'Executes before a relationship has been updated between two records.',
+        'after_relationship_update' => 'Executes after a relationship has been updated between two records.',
         'before_relationship_delete' => 'Executes before a relationship has been added between two records.',
         'after_relationship_delete' => 'Executes after a relationship has been deleted between two records.',
 
