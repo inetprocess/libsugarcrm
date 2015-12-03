@@ -77,13 +77,15 @@ class System
         //remove the js language files
         if (!method_exists('LanguageManager','removeJSLanguageFiles')) {
             $this->getLogger()->warning('Could not call the removeJSLanguageFiles method. Check that everything is clean.');
+        } else {
+            \LanguageManager::removeJSLanguageFiles();
         }
-        \LanguageManager::removeJSLanguageFiles();
         //remove language cache files
         if (!method_exists('LanguageManager','clearLanguageCache')) {
             $this->getLogger()->warning('Could not call the clearLanguageCache method. Check that everything is clean.');
+        } else {
+            \LanguageManager::clearLanguageCache();
         }
-        \LanguageManager::clearLanguageCache();
 
         $this->tearDown();
     }
