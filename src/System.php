@@ -73,9 +73,16 @@ class System
         require_once($qrrFile);
         $repair = new \RepairAndClear();
         $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), true, false);
+
         //remove the js language files
+        if (!method_exists('LanguageManager','removeJSLanguageFiles')) {
+            $this->getLogger->warn('Could not call the removeJSLanguageFiles method. Check that everything is clean.');
+        }
         \LanguageManager::removeJSLanguageFiles();
         //remove language cache files
+        if (!method_exists('LanguageManager','clearLanguageCache')) {
+            $this->getLogger->warn('Could not call the clearLanguageCache method. Check that everything is clean.');
+        }
         \LanguageManager::clearLanguageCache();
 
         $this->tearDown();
