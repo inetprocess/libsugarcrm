@@ -104,6 +104,12 @@ class LogicHook
         $bean = $beanManager->newBean($module);
 
         $logicHook = new \LogicHook();
+    
+        if (!method_exists($logicHook,'loadHooks')) {
+            throw new \BadMethodCallException('The loadHooks method does not exist. Is your SugarCRM too old ?');
+        }
+    
+    
         $logicHook->setBean($bean);
         $moduleHooks = $logicHook->loadHooks($beanManager->getModuleDirectory($module));
         if (empty($moduleHooks)) {
