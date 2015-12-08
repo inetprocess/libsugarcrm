@@ -199,10 +199,12 @@ class LogicHook
 
         // find files in ExtDir
         $customExtDir = 'custom/Extension/modules/' . $beanManager->getModuleDirectory($module) . '/Ext/LogicHooks/';
-        $finder = new Finder();
-        $finder->files()->in($customExtDir)->name('*.php');
-        foreach ($finder as $file) {
-            $files[] = $customExtDir . $file->getRelativePathname();
+        if (is_dir($customExtDir)) {
+            $finder = new Finder();
+            $finder->files()->in($customExtDir)->name('*.php');
+            foreach ($finder as $file) {
+                $files[] = $customExtDir . $file->getRelativePathname();
+            }
         }
 
         // read file and exit as soon as we find one
