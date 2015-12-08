@@ -66,10 +66,21 @@ class System
     }
 
     /**
+     * Add a message to the array
+     * @param    string    $message
+     */
+    public function addMessage($message)
+    {
+        $this->messages[] = $message;
+    }
+
+    /**
      * Taken from fayebsg/sugarcrm-cli
      * Repair and rebuild sugarcrm
+     * @param     boolean    $executeSql    Launch the SQL queries
+     * @return    array                     Messages
      */
-    public function repair($executeSql = false, $showOutput = false)
+    public function repair($executeSql = false)
     {
         // Config ang language
         $sugarConfig = $this->getEntryPoint()->getApplication()->getSugarConfig();
@@ -88,7 +99,7 @@ class System
             $message = preg_replace('#<(br\s*/?|/h3)>#i', PHP_EOL, $message);
             $message = trim(strip_tags($message));
             $message = preg_replace('#'.PHP_EOL.'{2,}#', PHP_EOL, $message);
-            $self->messages[] = trim($message);
+            $self->addMessage(trim($message));
             return '';
         });
 
@@ -96,7 +107,7 @@ class System
         require_once('include/utils/layout_utils.php');
         $GLOBALS['mod_strings'] = return_module_language($currentLanguage, 'Administration');
         $repair = new \RepairAndClear();
-        $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), $executeSql, $showOutput);
+        $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), $executeSql, true);
         ob_end_flush();
 
         //remove the js language files
