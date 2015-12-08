@@ -236,6 +236,17 @@ class EntryPoint
         return $this->beanList;
     }
 
+    /**
+     * Load stored global variables state into global state
+     */
+    public function setGlobalsFromSugar()
+    {
+        $this->defineVariablesAsGlobal(
+            $this->globals,
+            array()
+        );
+    }
+
     private function initSugar()
     {
         $callers = debug_backtrace();
@@ -347,16 +358,5 @@ class EntryPoint
                 $GLOBALS[$key] = $val;
             }
         }
-    }
-
-    /**
-     * Load stored global variables state into global state
-     */
-    public function setGlobalsFromSugar()
-    {
-        $this->defineVariablesAsGlobal(
-            $this->globals,
-            array()
-        );
     }
 }

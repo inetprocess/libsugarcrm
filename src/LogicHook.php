@@ -17,6 +17,7 @@
 
 namespace Inet\SugarCRM;
 
+use Symfony\Component\Finder\Finder;
 use Inet\SugarCRM\Bean;
 use Inet\SugarCRM\Exception\BeanNotFoundException;
 
@@ -94,8 +95,65 @@ class LogicHook
      */
     public function getModuleHooks($module)
     {
-        $modulesList = array_keys($this->getEntryPoint()->getBeansList());
+        $hooks = $this->getHooksDefinitionsFromSugar($module);
+        if (empty($hooks)) {
+            return array();
+        }
 
+        $sortedHooks = array();
+        $hooksDef = $this->getHooksDefinitionsFromFiles($module);
+
+        // Process hooks in a specific order
+        foreach ($this->modulesLogicHooksDef as $type => $hookDesc) {
+            if (!array_key_exists($type, $hooks) || empty($hooks[$type])) {
+                continue;
+            }
+
+            foreach ($hooks[$type] as $hook) {
+                $sortedHooks[$type][$hook[0]] = array(
+                    'Weight' => $hook[0],
+                    'Description' => $hook[1],
+                    'File' => $hook[2],
+                    'Class' => $hook[3],
+                    'Method' => $hook[4],
+                    'Defined In' => $this->findHookInDefinition($hooksDef, $type, $hook[2], $hook[3], $hook[4]),
+                );
+            }
+
+            ksort($sortedHooks[$type]);
+            unset($hooks[$type]);
+        }
+
+        // Have I lost some hooks ?
+        if (!empty($hooks)) {
+            foreach ($hooks as $type => $hooks) {
+                if (empty($hooks)) {
+                    continue;
+                }
+                foreach ($hooks as $hook) {
+                    $sortedHooks[$type][] = array(
+                        'Weight' => $hook[0],
+                        'Description' => $hook[1],
+                        'File' => $hook[2],
+                        'Class' => $hook[3],
+                        'Method' => $hook[4],
+                        'Defined In' => $this->findHookInDefinition($hooksDef, $type, $hook[2], $hook[3], $hook[4]),
+                    );
+                }
+            }
+        }
+
+        return $sortedHooks;
+    }
+
+    /**
+     * Get Hooks Definitions From SugarCRM
+     * @param     string    $module
+     * @return    array
+     */
+    public function getHooksDefinitionsFromSugar($module)
+    {
+        $modulesList = array_keys($this->getEntryPoint()->getBeansList());
         if (!in_array($module, $modulesList)) {
             throw new BeanNotFoundException("$module is not a valid module name");
         }
@@ -103,50 +161,86 @@ class LogicHook
         $beanManager = new Bean($this->getEntryPoint());
         $bean = $beanManager->newBean($module);
 
+        // even if we have our own method, rely on sugar to identify hooks
         $logicHook = new \LogicHook();
-    
-        if (!method_exists($logicHook,'loadHooks')) {
+        if (!method_exists($logicHook, 'loadHooks')) {
             throw new \BadMethodCallException('The loadHooks method does not exist. Is your SugarCRM too old ?');
         }
-    
-    
         $logicHook->setBean($bean);
-        $moduleHooks = $logicHook->loadHooks($beanManager->getModuleDirectory($module));
-        if (empty($moduleHooks)) {
-            return array();
+
+        return $logicHook->loadHooks($beanManager->getModuleDirectory($module));
+    }
+
+
+    /**
+     * Get, from the known files, the list of hooks defined in the system
+     * @param     string    $module
+     * @return    array                List of Hooks
+     */
+    public function getHooksDefinitionsFromFiles($module, $byFiles = true)
+    {
+        $modulesList = array_keys($this->getEntryPoint()->getBeansList());
+        if (!in_array($module, $modulesList)) {
+            throw new BeanNotFoundException("$module is not a valid module name");
         }
 
-        $sortedHooks = array();
-        // Process hooks in a specific order
-        foreach ($this->modulesLogicHooksDef as $hookType => $hookDesc) {
-            if (!array_key_exists($hookType, $moduleHooks) || empty($moduleHooks[$hookType])) {
+        $hooks = array();
+
+        // Create a new find to locate all the files where hooks could be defined
+        $beanManager = new Bean($this->getEntryPoint());
+        $bean = $beanManager->newBean($module);
+
+        $files = array();
+        // process the main file
+        $mainFile = 'custom/modules/' . $beanManager->getModuleDirectory($module) . '/logic_hooks.php';
+        if (file_exists($mainFile)) {
+            $files[] = $mainFile;
+        }
+
+        // find files in ExtDir
+        $customExtDir = 'custom/Extension/modules/' . $beanManager->getModuleDirectory($module) . '/Ext/LogicHooks/';
+        $finder = new Finder();
+        $finder->files()->in($customExtDir)->name('*.php');
+        foreach ($finder as $file) {
+            $files[] = $customExtDir . $file->getRelativePathname();
+        }
+
+        // read file and exit as soon as we find one
+        $hooksDefs = array();
+        foreach ($files as $file) {
+            if ($byFiles === true) {
+                $hook_array = array();
+            }
+            require($file);
+            $hooksDefs[$file] = $hook_array;
+        }
+
+        return ($byFiles === true ? $hooksDefs : $hook_array);
+    }
+
+
+    /**
+     * Try to identify the file where a hook is defined
+     * @param     array     $hooks
+     * @param     string    $type
+     * @param     string    $file
+     * @param     string    $class
+     * @param     string    $method
+     * @return    string                 File Name
+     */
+    public function findHookInDefinition(array $hooksDef, $type, $file, $class, $method)
+    {
+        foreach ($hooksDef as $defFile => $hooks) {
+            if (!array_key_exists($type, $hooks)) {
                 continue;
             }
 
-            foreach ($moduleHooks[$hookType] as $moduleHook) {
-                $sortedHooks[$hookType][$moduleHook[0]] = array(
-                    'Weight' => $moduleHook[0],
-                    'Description' => $moduleHook[1],
-                    'File' => $moduleHook[2],
-                    'Class' => $moduleHook[3],
-                    'Method' => $moduleHook[4],
-                );
-            }
-
-            ksort($sortedHooks[$hookType]);
-            unset($moduleHooks[$hookType]);
-        }
-
-        // Have I lost some hooks ?
-        if (!empty($moduleHooks)) {
-            foreach ($moduleHooks as $hookType => $hooks) {
-                if (empty($hooks)) {
-                    continue;
+            // Find a hook
+            foreach ($hooks[$type] as $hook) {
+                if ($hook[2] == $file && $hook[3] == $class && $hook[4] == $method) {
+                    return $defFile;
                 }
-                $sortedHooks[$hookType] = $hooks;
             }
         }
-
-        return $sortedHooks;
     }
 }
