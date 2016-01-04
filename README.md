@@ -1,4 +1,4 @@
-# inetprocess/sugarcrm
+# inetprocess/libsugarcrm
 That library allows anybody to interact with a SugarCRM application, outside that application.
 Suppose you need to do a importation script, running every night, with a very specific set of
 transformations or check. Then you need that kind of tools to be able to "Login" to SugarCRM,
