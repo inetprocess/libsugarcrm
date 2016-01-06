@@ -1,8 +1,8 @@
 {
-    "name": "inetprocess/sugarcrm",
+    "name": "inetprocess/libsugarcrm",
     "description": "This library provides a various classes to interact with SugarCRM",
     "type": "library",
-    "keywords": ["sugarcrm"],
+    "keywords": ["sugarcrm", "sugarcli"],
     "authors": [
         {
             "name": "Emmanuel Dyan",
