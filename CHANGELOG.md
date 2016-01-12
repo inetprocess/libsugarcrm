@@ -1,7 +1,11 @@
 Changelog
 =========
 
-(unreleased)
+(unrelease)
+-----
+* LangFileCleaner: Merge global and local version of variables.
+
+1.0.0
 -----
 * Add UsersManager class.
 * Reworked Bean::updateBean

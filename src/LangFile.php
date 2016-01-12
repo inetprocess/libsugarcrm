@@ -91,25 +91,23 @@ class LangFile
         if (array_key_exists($var_name, $this->var_blocks)) {
             $this->logger->warning("Found duplicate definition for $var_name.");
         }
+    }
+
+    /**
+     * Remove the global part of a variable definition. All variables must be set to their local equivalent.
+     */
+    public function normalizeVariableName($var_name)
+    {
         if (substr($var_name, 0, 8) == '$GLOBALS') {
             // Replaces:
             // $GLOBALS['test']  => $test
             // $GLOBALS [ 'test' ] => $test
             $reg = <<<'EOS'
-/\$GLOBALS\s*\[\s*'([^']+)'\s*\]/
+/^\$GLOBALS\s*\[\s*'([^']+)'\s*\]/
 EOS;
-            $local_name = preg_replace($reg, '$\1', $var_name);
-            if (array_key_exists($local_name, $this->var_blocks)) {
-                $this->logger->warning("Found duplicate local definition for $var_name.");
-            }
-        } else {
-            // Replaces:
-            // $test => $GLOBAL['test']
-            $global_name = preg_replace('/\$(\w+)/', '$GLOBALS[\'\1\']', $var_name);
-            if (array_key_exists($global_name, $this->var_blocks)) {
-                $this->logger->warning("Found duplicate GLOBAL definition for $var_name.");
-            }
+            $var_name = preg_replace($reg, '$\1', $var_name);
         }
+        return $var_name;
     }
 
     /**
@@ -237,6 +235,9 @@ EOS;
                 // Try to recreate the file as is.
                 $this->var_blocks[] = $var_value;
             } else {
+                // Strip $GLOBALS from variables names for sorting.
+                // This will merge local and global version of the same var name.
+                $var_name = $this->normalizeVariableName($var_name);
                 // Warnings if key already exists.
                 $this->checkVarName($var_name);
                 $this->var_blocks[$var_name] = $var_value;
