@@ -92,29 +92,6 @@ class LangFileTest extends \PHPUnit_Framework_TestCase
 
     public function fileProvider()
     {
-        $php_expected = <<<'EOF'
-<?php
-$GLOBALS['foo'] = array(
-    'test' => 'foo',
-    'bar' => 'baz',
-);
-// comment
-$GLOBALS['test']['foo'] = 1;
-$bar = test;
-
-EOF;
-
-        $php_not_sorted = <<<'EOF'
-<?php
-$GLOBALS['foo'] = array(
-    'test' => 'foo',
-    'bar' => 'baz',
-);
-// comment
-$GLOBALS['test']['foo'] = 1;
-$bar = test;
-
-EOF;
         $php_org = <<<'EOF'
 <?php
 $GLOBALS['foo'] = 2;
@@ -128,15 +105,63 @@ $GLOBALS['test']['foo'] = 1;$GLOBALS['foo'] = array(
 
 $bar = test;
 EOF;
+        $php_not_sorted = <<<'EOF'
+<?php
+$GLOBALS['foo'] = array(
+    'test' => 'foo',
+    'bar' => 'baz',
+);
+// comment
+$GLOBALS['test']['foo'] = 1;
+$bar = test;
+
+EOF;
+        $php_sorted = <<<'EOF'
+<?php
+$bar = test;
+$GLOBALS['foo'] = array(
+    'test' => 'foo',
+    'bar' => 'baz',
+);
+// comment
+$GLOBALS['test']['foo'] = 1;
+
+EOF;
+
 
         $log = <<<'EOF'
-[warning] Found duplicate definition for $GLOBALS['foo'].
+[warning] Found duplicate definition for $foo.
 
 EOF;
 
         $log_duplicates = <<<'EOF'
 [warning] Found duplicate definition for $GLOBALS["test"].
-[warning] Found duplicate local definition for $GLOBALS["test"].
+
+EOF;
+
+        // Remove globals but keep latest version of a variable.
+        $php_duplicate_globals = <<<'EOF'
+<?php
+$GLOBALS['foo'] = 1;
+$foo = 2;
+$GLOBALS['foo'] = 4;
+// Comment will be deleted
+$GLOBALS['bar'] = 'bar';
+// Comment will be kept
+$bar = 'baz';
+
+EOF;
+        $php_expected_from_duplicates = <<<'EOF'
+<?php
+// Comment will be kept
+$bar = 'baz';
+$GLOBALS['foo'] = 4;
+
+EOF;
+        $log_duplicates_globals = <<<'EOF'
+[warning] Found duplicate definition for $foo.
+[warning] Found duplicate definition for $foo.
+[warning] Found duplicate definition for $bar.
 
 EOF;
 
@@ -144,7 +169,7 @@ EOF;
             array('', $php_org, $php_org, true, false),
             array('', $php_org, $php_org, true, true),
             array($log, $php_not_sorted, $php_org, false, false),
-            array($log, $php_expected, $php_org, false, true),
+            array($log, $php_sorted, $php_org, false, true),
             // Test empty file
             array('', '', '', false, false),
             array('', "<?php \n;\n?>\n", '<?php ; ?>', false, true),
@@ -155,6 +180,7 @@ EOF;
                 false,
                 true
             ),
+            array($log_duplicates_globals, $php_expected_from_duplicates, $php_duplicate_globals, false, true),
         );
 
     }
@@ -184,6 +210,25 @@ EOF;
         );
     }
 
+    public function normalizedVariablesProvider()
+    {
+        return array(
+            array('$foo', '$foo'),
+            array('$foo', '$GLOBALS[\'foo\']'),
+            array('$foo', '$GLOBALS  [  \'foo\'  ]'),
+        );
+    }
+
+    /**
+     * @dataProvider normalizedVariablesProvider
+     */
+    public function testNormalizeVariableName($expected, $actual)
+    {
+        $logger = new TestLogger();
+        $lang_file = new LangFile($logger, '', false);
+        $this->assertEquals($expected, $lang_file->normalizeVariableName($actual));
+    }
+
     public function testCheckVarName()
     {
         $local = '$foo';
@@ -198,8 +243,6 @@ EOF;
         $lang->checkVarName($local);
         $log = <<<'EOF'
 [warning] Found duplicate definition for $foo.
-[warning] Found duplicate local definition for $GLOBALS['foo'].
-[warning] Found duplicate GLOBAL definition for $foo.
 
 EOF;
         $this->assertEquals($log, $logger->getLines());
