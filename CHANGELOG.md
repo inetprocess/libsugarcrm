@@ -1,7 +1,7 @@
 Changelog
 =========
 
-(unrelease)
+1.1.9-beta
 -----
 * LangFileCleaner: Merge global and local version of variables.
 
