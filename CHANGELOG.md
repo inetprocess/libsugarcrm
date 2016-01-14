@@ -4,6 +4,7 @@ Changelog
 1.1.9-beta
 -----
 * LangFileCleaner: Merge global and local version of variables.
+* Quick Repair: Fix issue with Sugar7 record.php files not cleared.
 
 1.0.0
 -----
