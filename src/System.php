@@ -107,7 +107,7 @@ class System
         require_once('include/utils/layout_utils.php');
         $GLOBALS['mod_strings'] = return_module_language($currentLanguage, 'Administration');
         $repair = new \RepairAndClear();
-        $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), $executeSql, true);
+        $repair->repairAndClearAll(array('clearAll'), array(translate('LBL_ALL_MODULES')), $executeSql, true, '');
         ob_end_flush();
 
         //remove the js language files
@@ -115,12 +115,6 @@ class System
             $this->getLogger()->warning('No removeJSLanguageFiles method (sugar too old?). Check that it\'s clean.');
         } else {
             \LanguageManager::removeJSLanguageFiles();
-        }
-        //remove language cache files
-        if (!method_exists('LanguageManager', 'clearLanguageCache')) {
-            $this->getLogger()->warning('No clearLanguageCache method (sugar too old?). Check that it\'s clean.');
-        } else {
-            \LanguageManager::clearLanguageCache();
         }
 
         $this->tearDown();
