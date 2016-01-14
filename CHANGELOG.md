@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.10-beta
+-----
+* Bean.php: Utility function to convert to array values.
+
 1.1.9-beta
 -----
 * LangFileCleaner: Merge global and local version of variables.

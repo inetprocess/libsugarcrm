@@ -43,6 +43,13 @@ class Bean
     const SUGAR_UPDATED = 2;
 
     /**
+     * Constants for pretty display of beans data
+     */
+    const BOOL_TRUE = "\xE2\x9C\x94";  // Unicode 'HEAVY CHECK MARK' (U+2714)
+    const BOOL_FALSE = "\xE2\x9C\x95"; // Unicode 'MULTIPLICATION X' (U+2715)
+
+
+    /**
      * Prefix that should be set by each class to identify it in logs
      *
      * @var string
@@ -825,5 +832,83 @@ class Bean
         }
 
         return true;
+    }
+
+    /**
+     * Return an array with the field_name and the value after replacing by a label when available.
+     *
+     * @param $module_definition Module definition fetch with language as in getModuleFields.
+     * @param $field_name Technical name of the field
+     * @param $value Value fetched from db. Enums will be replaced by label from list.
+     *
+     * @return array Array with a field_name and value.
+     */
+    public function applyLabelsToField($module_definition, $field_name, $value)
+    {
+        $key = $field_name;
+        if (array_key_exists($field_name, $module_definition)) {
+            $field_definition = $module_definition[$field_name];
+            if (isset($field_definition['vname'])) {
+                $field_name = $field_definition['vname'];
+            }
+            if (isset($field_definition['type'])) {
+                switch ($field_definition['type']) {
+                    case 'enum':
+                        if (isset($field_definition['options_list'][$value])) {
+                            $value = $field_definition['options_list'][$value];
+                        }
+                        break;
+                    case 'bool':
+                        $value = $value ? self::BOOL_TRUE : self::BOOL_FALSE;
+                        break;
+                }
+            }
+        }
+        return array($field_name, $value);
+    }
+
+    /**
+     * Fetch values for fields name from bean
+     *
+     * @param $pretty if true, will return the display name from the language.
+     * @param $lang language to use in pretty mode. Default to en_us.
+     *
+     * @return An array of key => value pairs.
+     */
+    public function beanToArray(array $fields_name, \SugarBean $bean, $pretty = false, $lang = 'en_us')
+    {
+        $module_definition = null;
+        if ($pretty) {
+            $module_definition = $this->getModuleFields($bean->module_name, $lang);
+        }
+        $fields = array();
+        foreach ($fields_name as $field_name) {
+            $key = $field_name;
+            $value = $bean->$field_name;
+            if (!is_null($module_definition)) {
+                list($key, $value) = $this->applyLabelsToField($module_definition, $key, $value);
+            }
+            $fields[$key] = $value;
+        }
+        return $fields;
+    }
+
+    /**
+     * Convert an array of \SugarBean objects to an array of arrays matching the Beans.
+     *
+     * @param $fields_name Only the fields named in this array will be present.
+     * @param $bean_list An array of SugarBean objects.
+     * @param $pretty If true, return the fields using the labels.
+     * @param $lang Language to use if pretty is true. Default to english.
+     *
+     * @return array An array of arrays with bean fields as keys.
+     */
+    public function beanListToArray(array $fields_name, array $bean_list, $pretty = false, $lang = 'en_us')
+    {
+        $ret = array();
+        foreach ($bean_list as $bean) {
+            $ret[] = $this->beanToArray($fields_name, $bean, $pretty, $lang);
+        }
+        return $ret;
     }
 }

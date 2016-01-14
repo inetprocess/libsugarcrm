@@ -175,4 +175,162 @@ class BeanTest extends SugarTestCase
         $sql = "DELETE from accounts where name='Test PHPUNIT account';";
         $db->query($sql);
     }
+
+    public function testApplyLabelsToField()
+    {
+        $bm = $this->getBeanManager();
+        $field_name = 'test';
+        $expected_field = 'foo';
+        $md = array(
+            $field_name => array(
+                'vname' => $expected_field,
+                'type' => 'test',
+            )
+        );
+
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, 'bar');
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals('bar', $actual_value);
+
+        $md[$field_name]['type'] = 'bool';
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, true);
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals("\xE2\x9C\x94", $actual_value);
+
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, false);
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals("\xE2\x9C\x95", $actual_value);
+
+        $md[$field_name]['type'] = 'enum';
+        $md[$field_name]['options_list']['bar'] = 'Baz';
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, 'bar');
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals('Baz', $actual_value);
+
+    }
+
+    public function testApplyLabelsToFieldFromSugar()
+    {
+        $bm = $this->getBeanManager();
+        $md = $bm->getModuleFields('Users', 'fr_FR');
+        $field_name = 'user_name';
+        $expected_field = 'Login';
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, 'bar');
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals('bar', $actual_value);
+
+        $field_name = 'is_admin';
+        $expected_field = 'Administrateur ?';
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, true);
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals("\xE2\x9C\x94", $actual_value);
+
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, false);
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals("\xE2\x9C\x95", $actual_value);
+
+        $field_name = 'status';
+        $expected_field = 'Statut';
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, 'Active');
+        $this->assertEquals($expected_field, $actual_field);
+        $this->assertEquals('Actif', $actual_value);
+
+    }
+
+    public function testApplyLabelsToFieldFailures()
+    {
+        $bm = $this->getBeanManager();
+        $field_name = 'toto';
+        $expected_field = 'foo';
+        $md = array(
+            'test' => array(
+                'name' => $expected_field,
+                'type' => 'test',
+            )
+        );
+        // Unkown field name
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, 'bar');
+        $this->assertEquals($field_name, $actual_field);
+        $this->assertEquals('bar', $actual_value);
+        // No vname for field
+        $field_name = 'test';
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, 'bar');
+        $this->assertEquals($field_name, $actual_field);
+        $this->assertEquals('bar', $actual_value);
+        // No options lists
+        $md[$field_name]['type'] = 'enum';
+        list($actual_field, $actual_value) = $bm->applyLabelsToField($md, $field_name, 'bar');
+        $this->assertEquals($field_name, $actual_field);
+        $this->assertEquals('bar', $actual_value);
+    }
+
+    public function testBeanToArray()
+    {
+        $bm = $this->getBeanManager();
+        $admin = $bm->getBean('Users', '1');
+        $fields = array('id', 'user_name', 'status', 'is_admin');
+        // Test pretty off
+        $bean_array = $bm->beanToArray($fields, $admin);
+        $expected_array = array(
+            'id' => '1',
+            'user_name' => 'admin',
+            'status' => 'Active',
+            'is_admin' => '1',
+        );
+        $this->assertEquals($expected_array, $bean_array);
+
+        // Test pretty on
+        $bean_array = $bm->beanToArray($fields, $admin, true, 'fr_FR');
+        $expected_array = array(
+            'ID' => '1',
+            'Login' => 'admin',
+            'Statut' => 'Actif',
+            'Administrateur ?' => "\xE2\x9C\x94",
+        );
+        $this->assertEquals($expected_array, $bean_array);
+    }
+
+    public function testBeanListtoArray()
+    {
+        $bm = $this->getBeanManager();
+        $beans_list = array(
+            $bm->getBean('Users', '1'),
+            $bm->getBean('Users', 'seed_jim_id'),
+        );
+        $fields = array('id', 'user_name', 'status', 'is_admin');
+        // Test pretty off
+        $bean_array = $bm->beanListToArray($fields, $beans_list);
+        $expected_array = array(
+            array(
+                'id' => '1',
+                'user_name' => 'admin',
+                'status' => 'Active',
+                'is_admin' => '1',
+            ),
+            array(
+                'id' => 'seed_jim_id',
+                'user_name' => 'jim',
+                'status' => 'Active',
+                'is_admin' => '0',
+            ),
+        );
+        $this->assertEquals($expected_array, $bean_array);
+        // Test pretty on
+        $bean_array = $bm->beanListToArray($fields, $beans_list, true, 'fr_FR');
+        $expected_array = array(
+            array(
+                'ID' => '1',
+                'Login' => 'admin',
+                'Statut' => 'Actif',
+                'Administrateur ?' => "\xE2\x9C\x94",
+            ),
+            array(
+                'ID' => 'seed_jim_id',
+                'Login' => 'jim',
+                'Statut' => 'Actif',
+                'Administrateur ?' => "\xE2\x9C\x95",
+            ),
+        );
+        $this->assertEquals($expected_array, $bean_array);
+    }
 }
