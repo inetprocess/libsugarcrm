@@ -7,9 +7,13 @@
         {
             "name": "Emmanuel Dyan",
             "email": "emmanuel.dyan@inetprocess.com"
+        },
+        {
+            "name": "Rémi Sauvat",
+            "email": "remi.sauvat@inetprocess.com"
         }
     ],
-    "license": "GPL-2.0",
+    "license": "Apache-2.0",
     "minimum-stability": "stable",
     "require": {
         "php": ">=5.3",

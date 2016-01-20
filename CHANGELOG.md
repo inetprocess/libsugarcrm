@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.11-beta
+-----
+* Change the license from GPL to Apache 2.0
+
 1.1.10-beta
 -----
 * Bean.php: Utility function to convert to array values.
