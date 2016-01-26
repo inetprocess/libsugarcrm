@@ -123,6 +123,23 @@ class System
     }
 
     /**
+     * Disable trackers in SugarCRM
+     */
+    public function disableActivity()
+    {
+        \Activity::disable();
+    }
+
+    /**
+     * Is activity Enabled ?
+     * @return    boolean
+     */
+    public function isActivityEnabled()
+    {
+        return \Activity::isEnabled();
+    }
+
+    /**
      * Taken from fayebsg/sugarcrm-cli
      * Useful to clean Sugar before leaving it
      */
