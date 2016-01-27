@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.1.13-beta
+-----
+* New class MetadataParser to add / remove buttons via SugarCRM Modulebuilder parser
+* New Util to remove a Label
+
+1.1.12-beta
+-----
+* New methods in System to Disable Activities (speeds up some tasks)
+
 1.1.11-beta
 -----
 * Change the license from GPL to Apache 2.0

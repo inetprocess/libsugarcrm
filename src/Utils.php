@@ -17,6 +17,8 @@
 
 namespace Inet\SugarCRM;
 
+use Inet\SugarCRM\Exception\SugarException;
+
 /**
  * SugarCRM Utils for language and dropdown management
  *
@@ -116,6 +118,24 @@ class Utils
     }
 
     /**
+     * Add a label for a specific module in SugarCRM
+     *
+     * @param string $module
+     * @param string $language
+     * @param string $label
+     * @param string $value
+     *
+     * @return bool
+     */
+    public function removeLabel($module, $language, $label, $value)
+    {
+        require_once('modules/ModuleBuilder/parsers/parser.label.php');
+        $delLabel = \ParserLabel::removeLabel($language, $label, $value, $module);
+
+        return $delLabel;
+    }
+
+    /**
      * Add a dropdown in SugarCRM
      *
      * @param string $name   Dropdown's name
@@ -147,7 +167,7 @@ class Utils
 
         $parser->saveDropDown($params);
     }
-    
+
     /**
      * Get the displayed value for a dropdown in SugarCRM
      *
@@ -162,7 +182,7 @@ class Utils
         if (!array_key_exists($name, $listStrings)) {
             return false;
         }
-        
+
         return $listStrings[$name];
     }
 }
