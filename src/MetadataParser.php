@@ -72,7 +72,7 @@ class MetadataParser
 
         // Search if the button exists
         foreach ($buttons as $button) {
-            if ($button['name'] === $name) {
+            if ($button['name'] === strtolower($name)) {
                 throw new SugarException("The button $name already exists in $module");
             }
         }
@@ -112,7 +112,7 @@ class MetadataParser
         // Search if the button exists
         $buttonPos = false;
         foreach ($buttons as $pos => $button) {
-            if ($button['name'] === $name) {
+            if ($button['name'] === strtolower($name)) {
                 $buttonPos = $pos;
                 break;
             }
