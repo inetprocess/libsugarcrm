@@ -297,8 +297,7 @@ class Bean
             if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)
               && !array_key_exists($field, $sugarBean->field_name_map)
             ) {
-                $this->getLogger()->error($this->logPrefix . "$field doesn't exist in Sugar");
-                continue;
+                $this->getLogger()->error($this->logPrefix . "$field doesn't seem to exist in Sugar");
             }
 
             // Field value and new value are the same
