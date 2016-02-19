@@ -120,9 +120,15 @@ class EntryPoint
      */
     public static function createInstance(Application $sugarApp, $sugarUserId)
     {
-        if (!is_null(self::$instance)) {
+        // We have an instance but with a different path
+        if (!is_null(self::$instance) && self::$instance->getPath() !== $sugarApp->getPath()) {
             throw new \RuntimeException('Unable to create a SugarCRM\EntryPoint more than once.');
         }
+
+        if (!is_null(self::$instance)) {
+            return self::$instance->getInstance();
+        }
+
         $instance = new self($sugarApp, $sugarUserId);
         $instance->initSugar();
         self::$instance = $instance;
