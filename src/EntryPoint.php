@@ -126,7 +126,10 @@ class EntryPoint
         }
 
         if (!is_null(self::$instance)) {
-            return self::$instance->getInstance();
+            $instance = self::$instance->getInstance();
+            $instance->setCurrentUser($sugarUserId);
+
+            return $instance;
         }
 
         $instance = new self($sugarApp, $sugarUserId);
@@ -289,8 +292,8 @@ class EntryPoint
             define('sugarEntry', true);
             // @codingStandardsIgnoreEnd
         }
-        if (!defined('ENTRY_POINT_TYPE')) {
-            define('ENTRY_POINT_TYPE', 'api');
+        if (!defined('BYPASS_COMPOSER_AUTOLOADER')) {
+            define('BYPASS_COMPOSER_AUTOLOADER', true);
         }
         // Save the variables as it is to make a diff later
         $beforeVars = get_defined_vars();
