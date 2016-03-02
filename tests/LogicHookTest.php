@@ -22,18 +22,17 @@ class LogicHookTest extends SugarTestCase
     public function setUp()
     {
         $this->lh = new LogicHook($this->getEntryPointInstance());
-        $this->sugarPath = $this->getEntryPointInstance()->getPath();
 
         // Create dirs and clean
-        $this->mainDir = $this->sugarPath . '/custom/modules/Meetings';
+        $this->mainDir = $this->getEntryPointInstance()->getPath() . '/custom/modules/Meetings';
         if (!is_dir($this->mainDir)) {
             mkdir($this->mainDir, 0750, true);
         }
-        $this->extDir = $this->sugarPath . '/custom/Extension/modules/Meetings/Ext/LogicHooks';
+        $this->extDir = $this->getEntryPointInstance()->getPath() . '/custom/Extension/modules/Meetings/Ext/LogicHooks';
         if (!is_dir($this->extDir)) {
             mkdir($this->extDir, 0750, true);
         }
-        $this->cacheDir = $this->sugarPath . '/custom/modules/Meetings/Ext/LogicHooks';
+        $this->cacheDir = $this->getEntryPointInstance()->getPath() . '/custom/modules/Meetings/Ext/LogicHooks';
         if (!is_dir($this->cacheDir)) {
             mkdir($this->cacheDir, 0750, true);
         }

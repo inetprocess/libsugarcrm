@@ -30,7 +30,7 @@ class UtilsTest extends SugarTestCase
 
     public function testAddAndRemoveLabels()
     {
-        $langFile = getenv('SUGARCRM_PATH') . '/custom/Extension/modules/Accounts/Ext/Language/en_us.lang.php';
+        $langFile = $this->getEntryPointInstance()->getPath() . '/custom/Extension/modules/Accounts/Ext/Language/en_us.lang.php';
         if (file_exists($langFile)) {
             unlink($langFile);
         }
@@ -55,7 +55,7 @@ class UtilsTest extends SugarTestCase
 
     public function testAddAndRemoveDropdown()
     {
-        $dir = getenv('SUGARCRM_PATH') . '/custom/include/language';
+        $dir = $this->getEntryPointInstance()->getPath() . '/custom/include/language';
         if (!is_dir($dir)) {
             mkdir($dir, 0750, true);
         }
