@@ -12,6 +12,7 @@ use Psr\Log\NullLogger;
  */
 class LogicHookTest extends SugarTestCase
 {
+    protected $lh;
     protected $mainDir;
     protected $extDir;
     protected $cacheDir;
@@ -19,6 +20,8 @@ class LogicHookTest extends SugarTestCase
 
     public function setUp()
     {
+        $this->lh = new LogicHook($this->getEntryPointInstance());
+
         // Create dirs and clean
         $this->mainDir = getenv('SUGARCRM_PATH') . '/custom/modules/Meetings';
         if (!is_dir($this->mainDir)) {
@@ -32,7 +35,7 @@ class LogicHookTest extends SugarTestCase
         if (!is_dir($this->cacheDir)) {
             mkdir($this->cacheDir, 0750, true);
         }
-        if (empty(self::$cacheFileContent)) {
+        if (empty(self::$cacheFileContent) && file_exists($this->cacheDir . '/logichooks.ext.php')) {
             self::$cacheFileContent = file_get_contents($this->cacheDir . '/logichooks.ext.php');
         }
 
@@ -60,16 +63,14 @@ class LogicHookTest extends SugarTestCase
 
     public function testGeneralMethods()
     {
-        $lh = new LogicHook($this->getEntryPointInstance());
         // Check i get the logger
-        $logger = $lh->getLogger();
+        $logger = $this->lh->getLogger();
         $this->assertInstanceOf('Psr\Log\NullLogger', $logger);
     }
 
     public function testGetModulesLogicHooksDef()
     {
-        $lh = new LogicHook($this->getEntryPointInstance());
-        $hooks = $lh->getModulesLogicHooksDef();
+        $hooks = $this->lh->getModulesLogicHooksDef();
         $this->assertInternalType('array', $hooks);
         $this->arrayHasKey('before_save', $hooks);
     }
@@ -79,14 +80,12 @@ class LogicHookTest extends SugarTestCase
      */
     public function testInvalidModule()
     {
-        $lh = new LogicHook($this->getEntryPointInstance());
-        $lh->getModuleHooks('TOTO');
+        $this->lh->getModuleHooks('TOTO');
     }
 
     public function testValidModuleEmptyHooks()
     {
-        $lh = new LogicHook($this->getEntryPointInstance());
-        $hooks = $lh->getModuleHooks('Contacts');
+        $hooks = $this->lh->getModuleHooks('Contacts');
         $this->assertInternalType('array', $hooks);
         $msg = 'If you find that error, that means that your Contacts module ';
         $msg.= 'has some defined hooks. Try an empty Sugar Instance !';
@@ -95,8 +94,7 @@ class LogicHookTest extends SugarTestCase
 
     public function testValidModuleOneHook()
     {
-        $lh = new LogicHook($this->getEntryPointInstance());
-        $hooks = $lh->getModuleHooks('Meetings');
+        $hooks = $this->lh->getModuleHooks('Meetings');
         $this->assertInternalType('array', $hooks);
         $msg = 'If you find that error, that means that your Meetings does not have the default ';
         $msg.= 'before_relationship_update Hook. Try an empty Sugar Instance !';
@@ -108,17 +106,14 @@ class LogicHookTest extends SugarTestCase
      */
     public function testGetHooksDefinitionsFromFilesWrongModule()
     {
-        $lh = new LogicHook($this->getEntryPointInstance());
         // Check the definition
-        $hooks = $lh->getHooksDefinitionsFromFiles('TOTO');
+        $hooks = $this->lh->getHooksDefinitionsFromFiles('TOTO');
     }
 
 
     public function testDefineMissingHook()
     {
-        $lh = new LogicHook($this->getEntryPointInstance());
-
-        $hooksBefore = $lh->getModuleHooks('Meetings');
+        $hooksBefore = $this->lh->getModuleHooks('Meetings');
         // Hook in main file
         file_put_contents($this->mainDir . '/logic_hooks.php', '<?php
 $hook_version = 1;
@@ -161,7 +156,7 @@ $hook_array["lost_hook"][] = array(
 $hook_array["empty_hook"][] = array();');
 
         // Check the definition
-        $hooks = $lh->getHooksDefinitionsFromFiles('Meetings');
+        $hooks = $this->lh->getHooksDefinitionsFromFiles('Meetings');
         $this->assertInternalType('array', $hooks);
         // Main file
         $this->assertArrayHasKey('custom/modules/Meetings/logic_hooks.php', $hooks);
@@ -172,7 +167,7 @@ $hook_array["empty_hook"][] = array();');
 
 
         // Now get the hooks and one should be missing
-        $hooksAfter = $lh->getModuleHooks('Meetings');
+        $hooksAfter = $this->lh->getModuleHooks('Meetings');
         $this->assertArrayNotHasKey('after_save', $hooksBefore);
         $this->assertArrayHasKey('after_save', $hooksAfter);
         $this->assertArrayHasKey('lost_hook', $hooksAfter);

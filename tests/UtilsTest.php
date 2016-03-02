@@ -55,7 +55,11 @@ class UtilsTest extends SugarTestCase
 
     public function testAddAndRemoveDropdown()
     {
-        $langFile = getenv('SUGARCRM_PATH') . '/custom/include/language/en_us.lang.php';
+        $dir = getenv('SUGARCRM_PATH') . '/custom/include/language';
+        if (!is_dir($dir)) {
+            mkdir($dir, 0750, true);
+        }
+        $langFile = $dir . '/en_us.lang.php';
         file_put_contents($langFile, '');
 
         $util = new Utils($this->getEntryPointInstance());
