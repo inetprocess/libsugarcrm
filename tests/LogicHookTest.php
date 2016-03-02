@@ -13,6 +13,7 @@ use Psr\Log\NullLogger;
 class LogicHookTest extends SugarTestCase
 {
     protected $lh;
+    protected $sugarPath;
     protected $mainDir;
     protected $extDir;
     protected $cacheDir;
@@ -21,17 +22,18 @@ class LogicHookTest extends SugarTestCase
     public function setUp()
     {
         $this->lh = new LogicHook($this->getEntryPointInstance());
+        $this->sugarPath = $this->getEntryPointInstance()->getPath();
 
         // Create dirs and clean
-        $this->mainDir = getenv('SUGARCRM_PATH') . '/custom/modules/Meetings';
+        $this->mainDir = $this->sugarPath . '/custom/modules/Meetings';
         if (!is_dir($this->mainDir)) {
             mkdir($this->mainDir, 0750, true);
         }
-        $this->extDir = getenv('SUGARCRM_PATH') . '/custom/Extension/modules/Meetings/Ext/LogicHooks';
+        $this->extDir = $this->sugarPath . '/custom/Extension/modules/Meetings/Ext/LogicHooks';
         if (!is_dir($this->extDir)) {
             mkdir($this->extDir, 0750, true);
         }
-        $this->cacheDir = getenv('SUGARCRM_PATH') . '/custom/modules/Meetings/Ext/LogicHooks';
+        $this->cacheDir = $this->sugarPath . '/custom/modules/Meetings/Ext/LogicHooks';
         if (!is_dir($this->cacheDir)) {
             mkdir($this->cacheDir, 0750, true);
         }
