@@ -57,11 +57,8 @@ class Utils
      *
      * @return array Multienum as Array
      */
-    public function arrayToMultiselect($values)
+    public function arrayToMultiselect(array $values)
     {
-        if (!is_array($values)) {
-            throw new \InvalidArgumentException('The values provided to arrayToMultiselect are not in an Array');
-        }
         // First clean the array
         foreach ($values as $k => $v) {
             if (empty($v)) {

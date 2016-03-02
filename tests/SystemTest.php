@@ -9,12 +9,25 @@ class SystemTest extends SugarTestCase
 {
     public function testRightInstanciation()
     {
-        // first load a bean
-        $entryPoint = $this->getEntryPointInstance();
+        $system = new System($this->getEntryPointInstance());
 
-        $system = new System($entryPoint);
+        // Activity
         $this->assertTrue($system->isActivityEnabled());
         $system->disableActivity();
         $this->assertFalse($system->isActivityEnabled());
+
+        // Logger
+        $logger = $system->getLogger();
+        $this->assertInstanceOf('Psr\Log\NullLogger', $logger);
+
+        // EntryPoint
+        $ep = $system->getEntryPoint();
+        $this->assertInstanceOf('\Inet\SugarCRM\EntryPoint', $ep);
+    }
+
+    public function testRepair()
+    {
+        $system = new System($this->getEntryPointInstance());
+        //$system->repair(); # Can't do that because it crashes everything
     }
 }

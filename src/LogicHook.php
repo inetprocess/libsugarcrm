@@ -127,10 +127,10 @@ class LogicHook
         // Have I lost some hooks ?
         if (!empty($hooks)) {
             foreach ($hooks as $type => $hooks) {
-                if (empty($hooks)) {
-                    continue;
-                }
                 foreach ($hooks as $hook) {
+                    if (empty($hook)) {
+                        continue;
+                    }
                     $sortedHooks[$type][] = array(
                         'Weight' => $hook[0],
                         'Description' => $hook[1],

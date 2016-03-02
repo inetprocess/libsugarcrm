@@ -300,7 +300,7 @@ class EntryPoint
 
         // Define sugar variables as global (so new)
         global $sugar_config, $current_user, $system_config, $beanList, $app_list_strings;
-        global $timedate, $current_entity, $locale, $current_language, $bwcModules;
+        global $timedate, $current_entity, $locale, $current_language, $bwcModules, $beanFiles;
 
         // Sugar will not reload config.php so we need to make sure the $sugar_config global is set properly.
         $sugar_config = $this->getApplication()->getSugarConfig(true);
