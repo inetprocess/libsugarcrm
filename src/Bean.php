@@ -175,16 +175,19 @@ class Bean
         if (!array_key_exists($module, $this->beanList)) {
             throw new \InvalidArgumentException($module . ' does not exist in SugarCRM, I cannot retrieve anything');
         }
+
         $beanClass = $this->beanList[$module];
         $bean = new $beanClass();
-
         if (!is_null($id)) {
+            $this->getLogger()->debug($this->logPrefix . "Retrieving $module with ID '$id' (deleted = $deleted)");
             // to change the parent bean, but not the related (e.g. change Account Name of Opportunity)
             if (!empty($params['disable_row_level_security'])) {
                 $bean->disable_row_level_security = true;
             }
             $result = $bean->retrieve($id, $encode, $deleted);
             if (is_null($result)) {
+                $this->getLogger()->info($this->logPrefix . 'Nothing to retrieve.');
+
                 return false;
             }
         }
@@ -196,13 +199,28 @@ class Bean
      * Create a new bean (Wrapper for BeanFactory and for old SugarCRM versions)
      *
      * @param string  $module   Module's name
-     * @param boolean $useCache Use caches (true implies usage of BeanFactory if the class exists)
      *
      * @return \SugarBean
      */
     public function newBean($module)
     {
         return $this->getBean($module);
+    }
+
+    /**
+     * Delete a bean
+     *
+     * @param string  $module   Module's name
+     * @param string  $id       UUID
+     *
+     */
+    public function deleteBean($module, $id, $disableSecurity = false)
+    {
+        $bean = $this->getBean($module, $id, array('disable_row_level_security' => $disableSecurity));
+        if ($bean === false) {
+            throw new \InvalidArgumentException("Can't delete that record.");
+        }
+        $bean->mark_deleted($id);
     }
 
     /**
@@ -470,6 +488,7 @@ class Bean
         $msg = "Searching a record from '{$module}' with $where (deleted = {$deleted})";
         $this->getLogger()->info($this->logPrefix . $msg);
         $aList = $sugarBean->get_list('', $where, 0, -1, -1, $deleted);
+
         // Clean Memory
         $this->cleanMemory();
 
