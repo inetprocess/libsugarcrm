@@ -69,7 +69,7 @@ class BeanTest extends SugarTestCase
         $changes = $bm->updateBeanFields($account, $fields);
         $this->assertEquals('Test account', $account->name);
         $this->assertObjectHasAttribute('invalid_field', $account);
-        $this->assertEquals(1, $changes);
+        $this->assertEquals(2, $changes);
     }
 
     public function testUpdateBeanFieldsFromCurrentUser()
