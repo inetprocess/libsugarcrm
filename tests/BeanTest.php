@@ -424,7 +424,11 @@ class BeanTest extends SugarTestCase
         // Count All
         $countFromCount = $bm->countRecords('Accounts', array(), false);
         $countFromGetList = count($bm->getList('Accounts', array(), 10000000, 0, 0));
-        $this->assertEquals($countFromCount, $countFromGetList, 'countRecords gives a different count than getList with deleted = false');
+        $this->assertEquals(
+            $countFromCount,
+            $countFromGetList,
+            "countRecords gives $countFromCount when getList gives $countFromGetList (with deleted = false)"
+        );
     }
 
     public function testGetListAndCompareNotDeleted()
@@ -433,7 +437,11 @@ class BeanTest extends SugarTestCase
         // Count All
         $countFromCount = $bm->countRecords('Accounts', array(), true);
         $countFromGetList = count($bm->getList('Accounts', array(), 10000000, 0, 1));
-        $this->assertEquals($countFromCount, $countFromGetList, 'countRecords gives a different count than getList with deleted = true');
+        $this->assertEquals(
+            $countFromCount,
+            $countFromGetList,
+            "countRecords gives $countFromCount when getList gives $countFromGetList (with deleted = true)"
+        );
     }
 
     /**
@@ -485,17 +493,25 @@ class BeanTest extends SugarTestCase
         $bm = $this->getBeanManager();
         // Count All
         $countFromCount = $bm->countRecords('Accounts', array(), false);
-        $countFromSearch = count($bm->searchBeans('Accounts', array(), 10000000, 0, 0));
-        $this->assertEquals($countFromCount, $countFromSearch, 'search gives a different count than getList with deleted = false');
+        $countFromSearch = count($bm->searchBeans('Accounts', array(), 0, 1000000));
+        $this->assertEquals(
+            $countFromCount,
+            $countFromSearch,
+            "countRecords gives $countFromCount when searchBeans gives $countFromSearch (with deleted = false)"
+        );
     }
 
     public function testSearchAndCompareDeleted()
     {
         $bm = $this->getBeanManager();
         // Count All
-        $countFromCount = $bm->countRecords('Accounts', array(), true);
-        $countFromSearch = count($bm->searchBeans('Accounts', array(), 10000000, 0, 1));
-        $this->assertEquals($countFromCount, $countFromSearch, 'search gives a different count than getList with deleted = true');
+        $countFromCount = $bm->countRecords('Accounts', array('deleted = 1'), true);
+        $countFromSearch = count($bm->searchBeans('Accounts', array(), 1, 1000000));
+        $this->assertEquals(
+            $countFromCount,
+            $countFromSearch,
+            "countRecords gives $countFromCount when searchBeans gives $countFromSearch (with deleted = true)"
+        );
     }
 
     public function testGetModuleTable()
@@ -528,7 +544,7 @@ class BeanTest extends SugarTestCase
         for ($i = 0; $i < 302; $i++) {
             $bm->getList('Accounts', array("name LIKE 'Test%'"), 1, 0, 0);
             if ($i % 100 === 0) {
-                fwrite(STDOUT, __METHOD__ . " - Looped $i / 502" . PHP_EOL);
+                fwrite(STDOUT, __METHOD__ . " - Looped $i / 302" . PHP_EOL);
             }
         }
 

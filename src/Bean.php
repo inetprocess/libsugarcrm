@@ -255,7 +255,7 @@ class Bean
         // First the deleted if asked
         $aDeletedBeans = array();
         if ($deleted == 1) {
-            $aDeletedBeans = $oBeans->get_list('', $where, $offset, $limit, -1, 1);
+            $aDeletedBeans = $oBeans->get_list('', $where, $offset, $limit, $limit, 1);
             $aDeletedBeans = $aDeletedBeans['list'];
             $limit-= count($aDeletedBeans);
         }
@@ -264,7 +264,7 @@ class Bean
         // Get the non-deleted rows if I have less than limit - deleted retrieved
         $aNotDeletedBeans = array();
         if ($limit > 0) {
-            $aNotDeletedBeans = $oBeans->get_list('', $where, $offset, $limit, -1, 0);
+            $aNotDeletedBeans = $oBeans->get_list('', $where, $offset, $limit, $limit, 0);
             $aNotDeletedBeans = $aNotDeletedBeans['list'];
         }
         $this->getLogger()->debug($this->logPrefix
@@ -304,7 +304,7 @@ class Bean
      *
      * @return array List of Records
      */
-    public function searchBeans($module, array $searchFields, $deleted = 0)
+    public function searchBeans($module, array $searchFields, $deleted = 0, $limit = 100)
     {
         // Search the related record ID
         $sugarBean = $this->getBean($module);
@@ -330,7 +330,7 @@ class Bean
         $where = implode(' AND ', $whereCriteras);
         $msg = "Searching a record from '{$module}' with $where (deleted = {$deleted})";
         $this->getLogger()->info($this->logPrefix . $msg);
-        $aList = $sugarBean->get_list('', $where, 0, -1, -1, $deleted);
+        $aList = $sugarBean->get_list('', $where, 0, $limit, $limit, $deleted);
 
         // Clean Memory
         $this->cleanMemory();
