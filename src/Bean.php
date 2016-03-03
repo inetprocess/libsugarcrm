@@ -461,6 +461,25 @@ class Bean
     }
 
 
+    public function updateBeanFieldsFromCurrentUser(\SugarBean $sugarBean)
+    {
+        $propertiesMapping = array(
+            'assigned_user_id' => 'id',
+            'created_by' => 'id',
+            'team_id' => 'team_id',
+            'team_set_id' => 'team_set_id',
+        );
+
+        foreach ($propertiesMapping as $beanProperty => $userProperty) {
+            if (property_exists($sugarBean, $beanProperty) && empty($sugarBean->$beanProperty)) {
+                $sugarBean->$beanProperty = $this->currentUser->$userProperty;
+            }
+        }
+        $msg = "Record assigned to id {$sugarBean->assigned_user_id} with team_id {$sugarBean->team_id} ";
+        $msg.= "and team_set_id {$sugarBean->team_set_id}";
+        $this->getLogger()->info($this->logPrefix . $msg);
+    }
+
    /**
      * Count Records for a Sugar Module
      *
@@ -497,27 +516,6 @@ class Bean
 
         return $countRes;
     }
-
-
-    public function updateBeanFieldsFromCurrentUser(\SugarBean $sugarBean)
-    {
-        $propertiesMapping = array(
-            'assigned_user_id' => 'id',
-            'created_by' => 'id',
-            'team_id' => 'team_id',
-            'team_set_id' => 'team_set_id',
-        );
-
-        foreach ($propertiesMapping as $beanProperty => $userProperty) {
-            if (property_exists($sugarBean, $beanProperty) && empty($sugarBean->$beanProperty)) {
-                $sugarBean->$beanProperty = $this->currentUser->$userProperty;
-            }
-        }
-        $msg = "Record assigned to id {$sugarBean->assigned_user_id} with team_id {$sugarBean->team_id} ";
-        $msg.= "and team_set_id {$sugarBean->team_set_id}";
-        $this->getLogger()->info($this->logPrefix . $msg);
-    }
-
 
     /**
      * Return the last written ID by updateBean
