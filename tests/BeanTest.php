@@ -19,6 +19,21 @@ class BeanTest extends SugarTestCase
         return new BeanManager($sugar);
     }
 
+    public function tearDown()
+    {
+        $db = new DB($this->getEntryPointInstance());
+        $sql = "DELETE from accounts where name='Test PHPUNIT account';";
+        $db->query($sql);
+    }
+
+    public function testGetBeansList()
+    {
+        $bm = $this->getBeanManager();
+        $beansList = $bm->getBeansList();
+        $this->assertNotEmpty($beansList);
+        $this->assertContains('Account', $beansList);
+    }
+
     public function testNewBean()
     {
         $bm = $this->getBeanManager();
@@ -134,6 +149,9 @@ class BeanTest extends SugarTestCase
         $this->assertInstanceOf('Account', $account);
         $this->assertEquals('test_account_id', $account->id);
         $this->assertEquals($account_name, $account->name);
+
+        // Check that The last ID is not empty and equal to the right ID
+        $this->assertEquals($bm->getLastUpdatedId(), $account->id);
     }
 
     /**
@@ -167,13 +185,6 @@ class BeanTest extends SugarTestCase
         $bm = $this->getBeanManager();
         $account = $bm->newBean('Accounts');
         $bm->updateBean($account, array('name' => 'test'), BeanManager::MODE_UPDATE);
-    }
-
-    public function tearDown()
-    {
-        $db = new DB($this->getEntryPointInstance());
-        $sql = "DELETE from accounts where name='Test PHPUNIT account';";
-        $db->query($sql);
     }
 
     public function testApplyLabelsToField()
@@ -332,5 +343,195 @@ class BeanTest extends SugarTestCase
             ),
         );
         $this->assertEquals($expected_array, $bean_array);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Can't delete that record.
+     */
+    public function testDeleteUnexistingRecord()
+    {
+        $bm = $this->getBeanManager();
+        $bm->deleteBean('Accounts', 'DOES NOT EXIST');
+    }
+
+    public function testCreateBeanThenDeleteIt()
+    {
+        // Create it
+        $bm = $this->getBeanManager();
+        $account = $bm->newBean('Accounts');
+        $bm->updateBean($account, array('name' => 'Test PHPUNIT account'), BeanManager::MODE_CREATE);
+        $account = $bm->getBean('Accounts', $bm->getLastUpdatedId());
+        $this->assertInstanceOf('SugarBean', $account);
+        $this->assertInstanceOf('Account', $account);
+        $this->assertNotEmpty($account->id);
+        $accountId = $account->id;
+
+        // delete it
+        $bm->deleteBean('Accounts', $accountId);
+
+        // Get record
+        $account = $bm->getBean('Accounts', $accountId, array(), true);
+        $this->assertFalse($account);
+
+        // Get record again but that one deleted
+        $account = $bm->getBean('Accounts', $accountId, array(), false);
+        $this->assertNotEmpty($account->id);
+        $this->assertInstanceOf('SugarBean', $account);
+        $this->assertInstanceOf('Account', $account);
+    }
+
+    public function testGetListNoWhere()
+    {
+        $bm = $this->getBeanManager();
+        $accs = $bm->getList('Accounts');
+        $this->assertInternalType('array', $accs);
+    }
+
+    public function testGetListWhereEmpty()
+    {
+        $bm = $this->getBeanManager();
+        $accs = $bm->getList('Accounts', array("date_entered >= '2020-01-01'"));
+        $this->assertInternalType('array', $accs);
+        $this->assertEmpty($accs);
+    }
+
+    public function testGetListWhereNotEmpty()
+    {
+        // Create it
+        $bm = $this->getBeanManager();
+        $account = $bm->newBean('Accounts');
+        $bm->updateBean($account, array('name' => 'Test PHPUNIT account'), BeanManager::MODE_CREATE);
+        $account = $bm->getBean('Accounts', $bm->getLastUpdatedId());
+        $this->assertInstanceOf('SugarBean', $account);
+        $this->assertInstanceOf('Account', $account);
+        $this->assertNotEmpty($account->id);
+        $accountId = $account->id;
+
+        // Get from the list
+        $bm = $this->getBeanManager();
+        $accs = $bm->getList('Accounts', array("name = 'Test PHPUNIT account'"));
+        $this->assertInternalType('array', $accs);
+        $this->assertNotEmpty($accs);
+
+        // Get all and count that we have the right number
+        $this->assertCount($bm->countRecords('Accounts', array("name = 'Test PHPUNIT account'")), $accs);
+    }
+
+    public function testGetListAndCompareDeleted()
+    {
+        $bm = $this->getBeanManager();
+        // Count All
+        $countFromCount = $bm->countRecords('Accounts', array(), false);
+        $countFromGetList = count($bm->getList('Accounts', array(), 10000000, 0, 0));
+        $this->assertEquals($countFromCount, $countFromGetList, 'countRecords gives a different count than getList with deleted = false');
+    }
+
+    public function testGetListAndCompareNotDeleted()
+    {
+        $bm = $this->getBeanManager();
+        // Count All
+        $countFromCount = $bm->countRecords('Accounts', array(), true);
+        $countFromGetList = count($bm->getList('Accounts', array(), 10000000, 0, 1));
+        $this->assertEquals($countFromCount, $countFromGetList, 'countRecords gives a different count than getList with deleted = true');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage TOTO does not exist in SugarCRM, I cannot retrieve anything
+     */
+    public function testSearchWrongModule()
+    {
+        $bm = $this->getBeanManager();
+        $bm->searchBeans('TOTO', array());
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage wrong_field (abc) not in Sugar for module Accounts, can't search on it
+     */
+    public function testSearchWrongField()
+    {
+        $bm = $this->getBeanManager();
+        $bm->searchBeans('Accounts', array('wrong_field' => 'abc'));
+    }
+
+    public function testSearchCorrectWithWhere()
+    {
+        $bm = $this->getBeanManager();
+        $bm->searchBeans('Accounts', array('id' => '123'));
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage The query to Count records failed
+     */
+    public function testCountWrongWhere()
+    {
+        $bm = $this->getBeanManager();
+        $bm->countRecords('Accounts', array("wrong"));
+    }
+
+    public function testCountEmpty()
+    {
+        $bm = $this->getBeanManager();
+        $total = $bm->countRecords('Accounts', array("id = 'NOTHING TO SEARCH'"));
+        $this->assertEquals(0, $total);
+    }
+
+
+    public function testSearchAndCompareNotDeleted()
+    {
+        $bm = $this->getBeanManager();
+        // Count All
+        $countFromCount = $bm->countRecords('Accounts', array(), false);
+        $countFromSearch = count($bm->searchBeans('Accounts', array(), 10000000, 0, 0));
+        $this->assertEquals($countFromCount, $countFromSearch, 'search gives a different count than getList with deleted = false');
+    }
+
+    public function testSearchAndCompareDeleted()
+    {
+        $bm = $this->getBeanManager();
+        // Count All
+        $countFromCount = $bm->countRecords('Accounts', array(), true);
+        $countFromSearch = count($bm->searchBeans('Accounts', array(), 10000000, 0, 1));
+        $this->assertEquals($countFromCount, $countFromSearch, 'search gives a different count than getList with deleted = true');
+    }
+
+    public function testGetModuleTable()
+    {
+        $bm = $this->getBeanManager();
+        $this->assertEquals($bm->getModuleTable('Accounts'), 'accounts');
+    }
+
+    public function testGetModuleCstmTable()
+    {
+        $bm = $this->getBeanManager();
+        $this->assertEquals($bm->getModuleCustomTable('Accounts'), 'accounts_cstm');
+    }
+
+    public function testGetModuleDirectory()
+    {
+        $bm = $this->getBeanManager();
+        $this->assertEquals($bm->getModuleDirectory('Accounts'), 'Accounts');
+    }
+
+    public function testClearCache()
+    {
+        $bm = $this->getBeanManager();
+        $anyArray = array();
+        for ($i = 0; $i < 2000; $i++) {
+            $anyArray[$i] = array_fill(0, 1000, 0);
+        }
+
+        fwrite(STDOUT, PHP_EOL);
+        for ($i = 0; $i < 302; $i++) {
+            $bm->getList('Accounts', array("name LIKE 'Test%'"), 1, 0, 0);
+            if ($i % 100 === 0) {
+                fwrite(STDOUT, __METHOD__ . " - Looped $i / 502" . PHP_EOL);
+            }
+        }
+
+        unset($anyArray);
     }
 }

@@ -149,7 +149,7 @@ class Bean
      * @param string  $module   Module's name
      * @param string  $id       UUID
      * @param array   $params   list of params
-     * @param boolean $deleted
+     * @param boolean $deleted  Retrieve the bean even if it's deleted
      * @param boolean $useCache
      *
      * @throws \InvalidArgumentException
@@ -244,9 +244,7 @@ class Bean
         $records = array();
         // Get the beans and build the WHERE
         $oBeans = $this->getBean($module);
-        if ($oBeans === false) {
-            throw new \InvalidArgumentException("$module does not exist in SugarCRM, I can't Select anything");
-        }
+
         if (count($where) > 0) {
             $where = "{$oBeans->table_name}." . implode(" AND {$oBeans->table_name}.", $where);
         } else {
@@ -296,61 +294,48 @@ class Bean
     }
 
     /**
-     * Update fields of a SugarCRM Bean
+     * Search a bean from a specific module and with WHERE criteras
      *
-     * @param \SugarBean $bean
-     * @param array      $fields     Array of field name => value
+     * @param string  $module       Sugar's Module name
+     * @param array   $searchFields List of fields where to search with their value
+     * @param boolean $deleted      Search for deleted record
      *
-     * @return integer Number of changed fields.
+     * @throws \Exception|\RuntimeException
      *
+     * @return array List of Records
      */
-    public function updateBeanFields(\SugarBean $sugarBean, array $fields)
+    public function searchBeans($module, array $searchFields, $deleted = 0)
     {
-        $changedValues = 0;
-        $nonEmptyFields = array('date_entered');
-        $moduleFields = $this->getModuleFields($sugarBean->module_name);
-        $moduleRels = $this->getModuleRelationships($sugarBean->module_name, 'one');
-        foreach ($fields as $field => $value) {
-            // It does not exist in Sugar
-            if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)
-              && !array_key_exists($field, $sugarBean->field_name_map)
-            ) {
-                $this->getLogger()->error($this->logPrefix . "$field doesn't seem to exist in Sugar");
+        // Search the related record ID
+        $sugarBean = $this->getBean($module);
+        foreach ($searchFields as $searchField => $externalValue) {
+            // Check the the fields are defined correctly
+            if (!isset($sugarBean->field_name_map[$searchField])) {
+                $msg = "{$searchField} ($externalValue) not in Sugar for module $module, can't search on it";
+                throw new \RuntimeException($msg);
             }
-
-            // Field value and new value are the same
-            // or I ignore empty values
-            if ((isset($sugarBean->$field) && $sugarBean->$field == htmlspecialchars($value, ENT_QUOTES))
-              || (in_array($field, $nonEmptyFields) && empty($value))) {
-                $this->getLogger()->debug($this->logPrefix . "Skipping $field, values are same or value is empty");
-                continue;
-            }
-
-            $sugarBean->$field = $value;
-            $this->getLogger()->debug($this->logPrefix . "Saving $field, value has changed");
-            $changedValues++;
         }
 
-        return $changedValues;
-    }
-
-    public function updateBeanFieldsFromCurrentUser(\SugarBean $sugarBean)
-    {
-        $propertiesMapping = array(
-            'assigned_user_id' => 'id',
-            'created_by' => 'id',
-            'team_id' => 'team_id',
-            'team_set_id' => 'team_set_id',
-        );
-
-        foreach ($propertiesMapping as $beanProperty => $userProperty) {
-            if (property_exists($sugarBean, $beanProperty) && empty($sugarBean->$beanProperty)) {
-                $sugarBean->$beanProperty = $this->currentUser->$userProperty;
-            }
+        // Try to get the records with the same DB ID
+        // what is the parent sql table ? by default the normal one
+        // but maybe the _cstm ?
+        $whereCriteras = array();
+        $moduleFields = $this->getModuleFields($module);
+        foreach ($searchFields as $searchField => $externalValue) {
+            // Search my field in the module fields
+            $searchField = $moduleFields[$searchField]['Table'] . '.' . $searchField;
+            $whereCriteras[] = "$searchField = '$externalValue'";
         }
-        $msg = "Record assigned to id {$sugarBean->assigned_user_id} with team_id {$sugarBean->team_id} ";
-        $msg.= "and team_set_id {$sugarBean->team_set_id}";
+
+        $where = implode(' AND ', $whereCriteras);
+        $msg = "Searching a record from '{$module}' with $where (deleted = {$deleted})";
         $this->getLogger()->info($this->logPrefix . $msg);
+        $aList = $sugarBean->get_list('', $where, 0, -1, -1, $deleted);
+
+        // Clean Memory
+        $this->cleanMemory();
+
+        return $aList['list'];
     }
 
     /**
@@ -437,62 +422,110 @@ class Bean
     }
 
     /**
+     * Update fields of a SugarCRM Bean
+     *
+     * @param \SugarBean $bean
+     * @param array      $fields     Array of field name => value
+     *
+     * @return integer Number of changed fields.
+     *
+     */
+    public function updateBeanFields(\SugarBean $sugarBean, array $fields)
+    {
+        $changedValues = 0;
+        $nonEmptyFields = array('date_entered');
+        $moduleFields = $this->getModuleFields($sugarBean->module_name);
+        $moduleRels = $this->getModuleRelationships($sugarBean->module_name, 'one');
+        foreach ($fields as $field => $value) {
+            // It does not exist in Sugar
+            if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)
+              && !array_key_exists($field, $sugarBean->field_name_map)
+            ) {
+                $this->getLogger()->error($this->logPrefix . "$field doesn't seem to exist in Sugar");
+            }
+
+            // Field value and new value are the same
+            // or I ignore empty values
+            if ((isset($sugarBean->$field) && $sugarBean->$field == htmlspecialchars($value, ENT_QUOTES))
+              || (in_array($field, $nonEmptyFields) && empty($value))) {
+                $this->getLogger()->debug($this->logPrefix . "Skipping $field, values are same or value is empty");
+                continue;
+            }
+
+            $sugarBean->$field = $value;
+            $this->getLogger()->debug($this->logPrefix . "Saving $field, value has changed");
+            $changedValues++;
+        }
+
+        return $changedValues;
+    }
+
+
+   /**
+     * Count Records for a Sugar Module
+     *
+     * @param string  $module        SugarCRM Module's Name
+     * @param array   $whereCriteras Search Criteras + values
+     * @param boolean $deleted       Take deleted records into account
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return integer Total number of records
+     */
+    public function countRecords($module, array $whereCriteras = array(), $deleted = false)
+    {
+        $bean = $this->getBean($module);
+        // build the where
+        $where = ($deleted ? 'WHERE 1 = 1' : 'WHERE deleted = 0');
+        if (!empty($whereCriteras)) {
+            $where.= ' AND ' . implode(' AND ', $whereCriteras);
+        }
+        $this->getLogger()->info($this->logPrefix . "Going to count the record with '{$where}'.");
+
+        // shot the query
+        $sql = "SELECT * FROM {$bean->table_name} $where";
+        $countSql = $bean->create_list_count_query($sql);
+        $countRes = (int)$bean->db->getOne($countSql);
+
+        if ($bean->db->database->error) {
+            throw new \RuntimeException('The query to Count records failed');
+        }
+
+        if ($countRes === 0) {
+            $this->getLogger()->info($this->logPrefix . "Query '$sql' gave 0 result.");
+        }
+
+        return $countRes;
+    }
+
+
+    public function updateBeanFieldsFromCurrentUser(\SugarBean $sugarBean)
+    {
+        $propertiesMapping = array(
+            'assigned_user_id' => 'id',
+            'created_by' => 'id',
+            'team_id' => 'team_id',
+            'team_set_id' => 'team_set_id',
+        );
+
+        foreach ($propertiesMapping as $beanProperty => $userProperty) {
+            if (property_exists($sugarBean, $beanProperty) && empty($sugarBean->$beanProperty)) {
+                $sugarBean->$beanProperty = $this->currentUser->$userProperty;
+            }
+        }
+        $msg = "Record assigned to id {$sugarBean->assigned_user_id} with team_id {$sugarBean->team_id} ";
+        $msg.= "and team_set_id {$sugarBean->team_set_id}";
+        $this->getLogger()->info($this->logPrefix . $msg);
+    }
+
+
+    /**
      * Return the last written ID by updateBean
      * @return    string    UUID (or empty)
      */
     public function getLastUpdatedId()
     {
         return $this->lastUpdatedId;
-    }
-
-
-    /**
-     * Search a bean from a specific module and with WHERE criteras
-     *
-     * @param string  $module       Sugar's Module name
-     * @param array   $searchFields List of fields where to search with their value
-     * @param boolean $deleted      Search for deleted record
-     *
-     * @throws \Exception|\RuntimeException
-     *
-     * @return array List of Records
-     */
-    public function searchBeans($module, array $searchFields, $deleted = 0)
-    {
-        // Search the related record ID
-        $sugarBean = $this->getBean($module);
-        if ($sugarBean === false) {
-            throw new \Exception("$module is not a Valid SugarCRM module");
-        }
-
-        foreach ($searchFields as $searchField => $externalValue) {
-            // Check the the fields are defined correctly
-            if (!isset($sugarBean->field_name_map[$searchField])) {
-                $msg = "{$searchField} ($externalValue) not in Sugar for module $module, can't search on it";
-                throw new \RuntimeException($msg);
-            }
-        }
-
-        // Try to get the records with the same DB ID
-        // what is the parent sql table ? by default the normal one
-        // but maybe the _cstm ?
-        $whereCriteras = array();
-        $moduleFields = $this->getModuleFields($module);
-        foreach ($searchFields as $searchField => $externalValue) {
-            // Search my field in the module fields
-            $searchField = $moduleFields[$searchField]['Table'] . '.' . $searchField;
-            $whereCriteras[] = "$searchField = '$externalValue'";
-        }
-
-        $where = implode(' AND ', $whereCriteras);
-        $msg = "Searching a record from '{$module}' with $where (deleted = {$deleted})";
-        $this->getLogger()->info($this->logPrefix . $msg);
-        $aList = $sugarBean->get_list('', $where, 0, -1, -1, $deleted);
-
-        // Clean Memory
-        $this->cleanMemory();
-
-        return $aList['list'];
     }
 
     /**
@@ -516,13 +549,6 @@ class Bean
         }
 
         $sugarBean = $this->getBean($module);
-        // Did I retrieve nothing ??
-        if ($sugarBean === false) {
-            throw new \InvalidArgumentException(
-                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
-            );
-        }
-
         // Load the fields from each tables (normal and _cstm) to get a diff and show when we have
         // fields in DB that are not needed anymore
         // that'll also be useful to get the DBTYPE
@@ -671,12 +697,6 @@ class Bean
         }
 
         $sugarBean = $this->getBean($module);
-        // Did I retrieve nothing ??
-        if ($sugarBean === false) {
-            throw new \InvalidArgumentException(
-                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
-            );
-        }
 
         $data = array();
         $rels = $sugarBean->get_linked_fields();
@@ -724,46 +744,6 @@ class Bean
         return $data;
     }
 
-   /**
-     * Count Records for a Sugar Module
-     *
-     * @param string  $module        SugarCRM Module's Name
-     * @param array   $whereCriteras Search Criteras + values
-     * @param boolean $deleted       Take deleted records into account
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return integer Total number of records
-     */
-    public function countRecords($module, array $whereCriteras = array(), $deleted = false)
-    {
-        $bean = $this->getBean($module);
-        if ($bean === false) {
-            throw new \InvalidArgumentException("$module does not exist in SugarCRM, I can't Count anything");
-        }
-        // build the where
-        $where = ($deleted ? 'WHERE 1 = 1' : 'WHERE deleted = 0');
-        if (!empty($whereCriteras)) {
-            $where.= ' AND ' . implode(' AND ', $whereCriteras);
-        }
-        $this->getLogger()->info($this->logPrefix . "Going to count the record with '{$where}'.");
-
-        // shot the query
-        $sql = "SELECT * FROM {$bean->table_name} $where";
-        $countSql = $bean->create_list_count_query($sql);
-        $countRes = $bean->db->getOne($countSql);
-
-        if ($bean->db->database->error) {
-            throw new \RuntimeException('The query to Count records failed');
-        }
-
-        if ($countRes === 0) {
-            $this->getLogger()->info($this->logPrefix . "Query '$sql' gave 0 result.");
-        }
-
-        return (int)$countRes;
-    }
-
     /**
      * Returns the table's name for a module
      *
@@ -776,12 +756,6 @@ class Bean
     public function getModuleTable($module)
     {
         $sugarBean = $this->getBean($module);
-        // Did I retrieve nothing ??
-        if ($sugarBean === false) {
-            throw new \InvalidArgumentException(
-                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
-            );
-        }
 
         return $sugarBean->table_name;
     }
@@ -798,12 +772,6 @@ class Bean
     public function getModuleCustomTable($module)
     {
         $sugarBean = $this->getBean($module);
-        // Did I retrieve nothing ??
-        if ($sugarBean === false) {
-            throw new \InvalidArgumentException(
-                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
-            );
-        }
 
         return $sugarBean->get_custom_table_name();
     }
@@ -820,12 +788,6 @@ class Bean
     public function getModuleDirectory($module)
     {
         $sugarBean = $this->getBean($module);
-        // Did I retrieve nothing ??
-        if ($sugarBean === false) {
-            throw new \InvalidArgumentException(
-                "$module is not a Valid SugarCRM module (be careful of the Sugar version, try with an 's' and no 's'."
-            );
-        }
 
         return $sugarBean->module_dir;
     }
@@ -839,7 +801,7 @@ class Bean
     private function cleanMemory()
     {
         $usedMemory = round(memory_get_usage() / 1024 / 1024, 0);
-        if ($usedMemory > 250 && $this->loopWithoutCleaningMemory > 500) {
+        if ($usedMemory > 250 && $this->loopWithoutCleaningMemory > 300) {
             BeanFactoryCache::clearCache();
             $this->loopWithoutCleaningMemory = 0;
             $msg = "Memory Cleaned because usage is around {$usedMemory} Mib. ";
