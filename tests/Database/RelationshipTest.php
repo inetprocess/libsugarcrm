@@ -2,7 +2,7 @@
 
 namespace Inet\SugarCRM\Database;
 
-use Inet\SugarCRM\Database\Metadata;
+use Inet\SugarCRM\Database\Relationship;
 
 use Inet\SugarCRM\Tests\TestsUtil\DatabaseTestCase;
 use Inet\SugarCRM\Tests\TestsUtil\TestLogger;
@@ -10,7 +10,7 @@ use Inet\SugarCRM\Tests\TestsUtil\TestLogger;
 /**
  * @group db
  */
-class MetadataTest extends DatabaseTestCase
+class RelationshipTest extends DatabaseTestCase
 {
     protected $meta = null;
     protected $base = null;
@@ -23,7 +23,7 @@ class MetadataTest extends DatabaseTestCase
 
     public function getYamlFilename($name)
     {
-        return __DIR__ . '/metadata/' . $name . '.yaml';
+        return __DIR__ . '/relationships/' . $name . '.yaml';
     }
 
     public function setUp()
@@ -31,7 +31,7 @@ class MetadataTest extends DatabaseTestCase
         parent::setUp();
 
         $logger = new TestLogger();
-        $this->meta = new Metadata($logger, $this->getPdo());
+        $this->meta = new Relationship($logger, $this->getPdo());
         $this->meta->setDefFile($this->getYamlFilename(self::METADATA_BASE));
         $this->base = $this->meta->loadFromFile();
         $this->meta->setDefFile($this->getYamlFilename(self::METADATA_NEW));
@@ -39,14 +39,14 @@ class MetadataTest extends DatabaseTestCase
 
     }
 
-    public function testEmptyMetadata()
+    public function testEmptyRelationship()
     {
         $logger = new TestLogger();
-        $this->meta = new Metadata($logger, $this->getPdo());
+        $this->meta = new Relationship($logger, $this->getPdo());
         $this->meta->setDefFile($this->getYamlFilename('empty'));
         $this->assertEmpty($this->meta->loadFromFile());
         $this->assertEquals(
-            "[warning] No definition found in metadata file.\n",
+            "[warning] No definition found in relationships file.\n",
             $logger->getLines()
         );
 
@@ -55,16 +55,16 @@ class MetadataTest extends DatabaseTestCase
     public function testDiffFull()
     {
         $diff = $this->meta->diff($this->base, $this->new);
+        $expected[Relationship::ADD]['test2']['id'] = 2;
+        $expected[Relationship::ADD]['test2']['relationship_name'] = 'test2';
 
-        $expected[Metadata::ADD]['field4']['id'] = 'field4';
-        $expected[Metadata::ADD]['field4']['name'] = 'foobar';
+        $expected[Relationship::DEL]['test1']['id'] = 1;
+        $expected[Relationship::DEL]['test1']['relationship_name'] = 'test1';
 
-        $expected[Metadata::DEL]['field1']['id'] = 'field1';
-        $expected[Metadata::DEL]['field1']['name'] = 'foo';
-
-        $expected[Metadata::UPDATE]['field2'][Metadata::BASE]['id'] = 'field2';
-        $expected[Metadata::UPDATE]['field2'][Metadata::BASE]['name'] = 'bar';
-        $expected[Metadata::UPDATE]['field2'][Metadata::MODIFIED]['name'] = 'baz';
+        $expected[Relationship::UPDATE]['same'][Relationship::BASE]['id'] = 3;
+        $expected[Relationship::UPDATE]['same'][Relationship::BASE]['relationship_name'] = 'same';
+        $expected[Relationship::UPDATE]['same'][Relationship::BASE]['lhs_module'] = 'old';
+        $expected[Relationship::UPDATE]['same'][Relationship::MODIFIED]['lhs_module'] = 'new';
 
         $this->assertEquals($expected, $diff);
     }
@@ -78,30 +78,12 @@ class MetadataTest extends DatabaseTestCase
 
     public function testDiffEmpty()
     {
-        $diff = $this->meta->diff($this->base, $this->new, Metadata::DIFF_NONE);
+        $diff = $this->meta->diff($this->base, $this->new, Relationship::DIFF_NONE);
         $expected = array(
-            Metadata::ADD => array(),
-            Metadata::DEL => array(),
-            Metadata::UPDATE => array()
+            Relationship::ADD => array(),
+            Relationship::DEL => array(),
+            Relationship::UPDATE => array()
         );
-        $this->assertEquals($expected, $diff);
-    }
-
-    public function testDiffFilter()
-    {
-        $diff = $this->meta->diff(
-            $this->base,
-            $this->new,
-            Metadata::DIFF_ADD | Metadata::DIFF_UPDATE,
-            array('field4', 'field1')
-        );
-        $expected = array(
-            Metadata::ADD => array(),
-            Metadata::DEL => array(),
-            Metadata::UPDATE => array()
-        );
-        $expected[Metadata::ADD]['field4']['id'] = 'field4';
-        $expected[Metadata::ADD]['field4']['name'] = 'foobar';
         $this->assertEquals($expected, $diff);
     }
 
@@ -111,18 +93,14 @@ class MetadataTest extends DatabaseTestCase
         $unsorted = $this->meta->loadFromFile();
 
         $expected_array = array(
-            'field1' => array(
-                'id' => 'field1',
-                'name' => 'foo',
+            'a' => array(
+                'id' => 1,
+                'relationship_name' => 'a',
             ),
-            'field2_test' => array(
-                'id' => 'field2_test',
-                'name' => 'bar',
-            ),
-            'field_test' => array(
-                'id' => 'field_test',
-                'name' => 'bar',
-            ),
+            'b' => array(
+                'id' => 2,
+                'relationship_name' => 'b',
+            )
         );
 
         $this->assertEquals(var_export($expected_array, true), var_export($unsorted, true));
@@ -134,9 +112,9 @@ class MetadataTest extends DatabaseTestCase
         $sql = $this->meta->generateSqlQueries($diff);
 
         $expected_sql = <<<SQL
-INSERT INTO `fields_meta_data` (`id`, `name`) VALUES ('field4', 'foobar');
-DELETE FROM `fields_meta_data` WHERE id = 'field1';
-UPDATE `fields_meta_data` SET `name` = 'baz' WHERE id = 'field2';
+INSERT INTO `relationships` (`id`, `relationship_name`) VALUES (2, 'test2');
+DELETE FROM `relationships` WHERE id = 1;
+UPDATE `relationships` SET `lhs_module` = 'new' WHERE id = 3;
 
 SQL;
         $this->assertEquals($expected_sql, $sql);

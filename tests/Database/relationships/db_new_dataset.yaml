@@ -1,0 +1,20 @@
+relationships:
+    -
+        id: 24930c03-8063-ac32-1c18-56dd5baa4066
+        relationship_name: account_campaign_log
+        lhs_module: Accounts
+        lhs_table: accounts
+        lhs_key: id
+        lhs_vname: null
+        rhs_module: CampaignLog
+        rhs_table: campaign_log
+        rhs_key: target_id
+        rhs_vname: null
+        join_table: null
+        join_key_lhs: null
+        join_key_rhs: null
+        relationship_type: one-to-many
+        relationship_role_column: null
+        relationship_role_column_value: null
+        reverse: '0'
+        deleted: '0'

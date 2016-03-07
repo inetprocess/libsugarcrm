@@ -1,0 +1,7 @@
+-
+    id: 2
+    relationship_name: test2
+-
+    id: 3
+    relationship_name: same
+    lhs_module: new
