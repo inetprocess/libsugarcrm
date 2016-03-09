@@ -1,6 +1,6 @@
 Changelog
 =========
-1.1.14-beta -> 1.1.17-beta
+1.1.14-beta -> 1.1.18-beta
 -----
 * Button with capitalized letters was not found in MetadataParser
 * Some hardcoded fields in SugarCRM were not detectable in vardefs
