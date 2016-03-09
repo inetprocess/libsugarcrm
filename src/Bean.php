@@ -18,6 +18,7 @@
 namespace Inet\SugarCRM;
 
 use Inet\SugarCRM\Exception\UpdateBeanException;
+use Inet\SugarCRM\Exception\SugarException;
 
 /**
  * SugarCRM Beans Tools: search, update, create, etc...
@@ -177,6 +178,10 @@ class Bean
         }
 
         $beanClass = $this->beanList[$module];
+        if (!class_exists($beanClass)) {
+            throw new SugarException("Class $beanClass does not exist");
+        }
+
         $bean = new $beanClass();
         if (!is_null($id)) {
             $this->getLogger()->debug($this->logPrefix . "Retrieving $module with ID '$id' (deleted = $deleted)");
@@ -754,6 +759,10 @@ class Bean
     public function getModuleTable($module)
     {
         $sugarBean = $this->getBean($module);
+        $tableName = $sugarBean->table_name;
+        if (empty($tableName)) {
+            throw new SugarException("$module returns an empty table name");
+        }
 
         return $sugarBean->table_name;
     }
