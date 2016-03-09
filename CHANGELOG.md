@@ -1,5 +1,20 @@
 Changelog
 =========
+1.1.14-beta -> 1.1.17-beta
+-----
+* Button with capitalized letters was not found in MetadataParser
+* Some hardcoded fields in SugarCRM were not detectable in vardefs
+* If the entrypoint is loaded again with the same path, now return the same instance
+* Add deleteBean + corrected entrypoint to reload the current user
+* Remove useless constant and load current user when get entry point
+* Lot of new Unit Tests
+* Corrected sugarPath
+* Invalid attribute makes a change in bean
+* Moved method updateBeanFieldsFromCurrentUser in Bean.php
+* Corrected a bug with searchBeans and getList that doesn't retrieve more than 40 records
+* Added Relationship Diff
+* Added exceptions when we can't retrieve the module table
+
 
 1.1.13-beta
 -----
