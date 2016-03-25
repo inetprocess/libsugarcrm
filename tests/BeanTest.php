@@ -24,6 +24,8 @@ class BeanTest extends SugarTestCase
         $db = new DB($this->getEntryPointInstance());
         $sql = "DELETE from accounts where name='Test PHPUNIT account';";
         $db->query($sql);
+        $sql = "DELETE from users where user_name='Test PHPUNIT user';";
+        $db->query($sql);
     }
 
     public function testGetBeansList()
@@ -137,6 +139,13 @@ class BeanTest extends SugarTestCase
         $this->assertInstanceOf('Account', $account);
         $this->assertEquals('foo', $account->description);
 
+        // Test update email1 field
+        $ret = $bm->updateBean($account, array('email1' => 'foo@bar.com'), BeanManager::MODE_UPDATE);
+        $this->assertEquals(BeanManager::SUGAR_UPDATED, $ret);
+        $account = $bm->getBean('Accounts', $account->id);
+        $this->assertInstanceOf('Account', $account);
+        $this->assertEquals('foo@bar.com', $account->email1);
+
         // Test create with id
         $account = $bm->newBean('Accounts');
         $fields = array(
@@ -152,6 +161,39 @@ class BeanTest extends SugarTestCase
 
         // Check that The last ID is not empty and equal to the right ID
         $this->assertEquals($bm->getLastUpdatedId(), $account->id);
+    }
+
+    public function testUserEmailUpdate()
+    {
+        $user_name = 'Test PHPUNIT user';
+        $email = 'foo@bar.com';
+        $bm = $this->getBeanManager();
+        $user_bean = $bm->newBean('Users');
+        $fields = array(
+            'user_name' => $user_name,
+            'email1' => $email,
+        );
+        $ret = $bm->updateBean($user_bean, $fields, BeanManager::MODE_CREATE);
+        $this->assertEquals(BeanManager::SUGAR_CREATED, $ret);
+        $user_bean = $bm->getBean('Users', $user_bean->id);
+        $this->assertEquals($user_name, $user_bean->user_name);
+        $this->assertEquals($email, $user_bean->email1);
+
+        $email = 'baz@baz.com';
+        $ret = $bm->updateBean($user_bean, array('email1' => $email), BeanManager::MODE_UPDATE);
+        $this->assertEquals(BeanManager::SUGAR_UPDATED, $ret);
+        $user_bean = $bm->getBean('Users', $user_bean->id);
+        $this->assertEquals($user_name, $user_bean->user_name);
+        $this->assertEquals($email, $user_bean->email1);
+
+        $email = 'foo@bar.com';
+        $ret = $bm->updateBean($user_bean, array('email1' => $email), BeanManager::MODE_UPDATE);
+        $this->assertEquals(BeanManager::SUGAR_UPDATED, $ret);
+        $user_bean = $bm->getBean('Users', $user_bean->id);
+        $this->assertEquals($user_name, $user_bean->user_name);
+        $this->assertEquals($email, $user_bean->email1);
+
+
     }
 
     /**
@@ -532,6 +574,9 @@ class BeanTest extends SugarTestCase
         $this->assertEquals($bm->getModuleDirectory('Accounts'), 'Accounts');
     }
 
+    /**
+     * @group cache
+     */
     public function testClearCache()
     {
         $bm = $this->getBeanManager();

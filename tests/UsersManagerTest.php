@@ -6,6 +6,7 @@ use Inet\SugarCRM\EntryPoint;
 use Inet\SugarCRM\UsersManager;
 use Inet\SugarCRM\Exception\UpdateBeanException;
 use Psr\Log\NullLogger;
+use Inet\SugarCRM\Bean as BeanManager;
 
 /**
  * @group sugarcrm
@@ -23,6 +24,7 @@ class UsersManagerTest extends SugarTestCase
 
     public function testGetUsers()
     {
+        // Create User
         $user_name = 'test_user';
         $sugar = $this->getEntryPointInstance();
         $this->cleanUsers($user_name);
@@ -32,24 +34,40 @@ class UsersManagerTest extends SugarTestCase
         ));
         $this->assertRegExp('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/', $user_id);
 
+        // Fetch user
         $user_bean = $um->getUserBeanByName($user_name);
         $this->assertEquals($user_id, $user_bean->id);
         $this->assertEquals(1, $user_bean->is_admin);
 
         $this->assertEquals($user_id, $um->getUserIdByName($user_name));
 
+        // Deactivate
         $um->deactivate($user_name);
         $user_bean = $um->getUserBeanByName($user_name);
         $this->assertEquals('Inactive', $user_bean->status);
 
+        // Activate
         $um->activate($user_name);
         $user_bean = $um->getUserBeanByName($user_name);
         $this->assertEquals('Active', $user_bean->status);
 
+        //Unset admin
         $um->setAdmin($user_name, false);
         $user_bean = $um->getUserBeanByName($user_name);
         $this->assertEquals(0, $user_bean->is_admin);
 
+        // Set email
+        $email = 'foo@bar.com';
+        $um->updateUser($user_name, array('email1' => $email));
+        $user_bean = $um->getUserBeanByName($user_name);
+
+        // Test a second time because it might fail sometimes.
+        $email = 'baz@baz.com';
+        $um->updateUser($user_name, array('email1' => $email));
+        $user_bean = $um->getUserBeanByName($user_name);
+        $this->assertEquals($email, $user_bean->email1);
+
+        //Set password
         $um->setPassword($user_name, 'test_password');
         $user_bean = $um->getUserBeanByName($user_name);
         $this->assertTrue($user_bean->authenticate_user(md5('test_password')));

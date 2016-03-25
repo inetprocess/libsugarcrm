@@ -23,8 +23,6 @@ use Inet\SugarCRM\Bean as BeanManager;
 
 /**
  * SugarCRM User Management
- *
- * @todo Unit Tests
  */
 class UsersManager
 {
@@ -98,7 +96,8 @@ class UsersManager
             $this->getLogger()->info("Unable to find a user with user_name: {$userName}.");
             throw new BeanNotFoundException("User with user_name '$userName' not found.");
         }
-        return $users_list[0];
+        // Force a retrieve of the full bean
+        return $this->getBeansManager()->getBean('Users', $users_list[0]->id);
     }
 
     public function getUserIdByName($userName)

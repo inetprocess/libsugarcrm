@@ -1,5 +1,10 @@
 Changelog
 =========
+
+1.1.19-beta
+-----
+* Fix issue where email address would not be retrieved in `UsersManager`.
+
 1.1.14-beta -> 1.1.18-beta
 -----
 * Button with capitalized letters was not found in MetadataParser
