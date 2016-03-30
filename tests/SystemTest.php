@@ -25,9 +25,17 @@ class SystemTest extends SugarTestCase
         $this->assertInstanceOf('\Inet\SugarCRM\EntryPoint', $ep);
     }
 
+    /**
+     * @group sugarcrm-slow
+     */
     public function testRepair()
     {
+        $checkFile = realpath(getenv('SUGARCRM_PATH') . '/cache/class_map.php');
+        $this->assertFileExists($checkFile, 'That file is used to test my repair');
+        unlink($checkFile);
+        $this->assertFileNotExists($checkFile, 'That file is used to test my repair');
         $system = new System($this->getEntryPointInstance());
-        //$system->repair(); # Can't do that because it crashes everything
+        $system->repair();
+        $this->assertFileExists($checkFile, 'That file is used to test my repair');
     }
 }

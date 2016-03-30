@@ -78,12 +78,14 @@ class System
      * Taken from fayebsg/sugarcrm-cli
      * Repair and rebuild sugarcrm
      * @param     boolean    $executeSql    Launch the SQL queries
+     * @param     string     $user_id       User id of the admin user
      * @return    array                     Messages
      */
-    public function repair($executeSql = false)
+    public function repair($executeSql = false, $user_id = '1')
     {
         // Config ang language
         $sugarConfig = $this->getEntryPoint()->getApplication()->getSugarConfig();
+        $this->getEntryPoint()->setCurrentUser($user_id);
         $currentLanguage = $sugarConfig['default_language'];
 
         // check that I can repair (old sugar)

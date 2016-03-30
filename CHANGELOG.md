@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.20-beta
+-----
+* Fix tests for Repair and Rebuild
+
 1.1.19-beta
 -----
 * Fix issue where email address would not be retrieved in `UsersManager`.
