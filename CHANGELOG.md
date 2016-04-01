@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.1.21-beta
+-----
+* Add more functions for specific Repair and Rebuild
+* Tests improved
+
 1.1.20-beta
 -----
 * Fix tests for Repair and Rebuild
