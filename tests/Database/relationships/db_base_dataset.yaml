@@ -37,3 +37,22 @@ relationships:
         relationship_role_column_value: Accounts
         reverse: '0'
         deleted: '0'
+    -
+        id: 1620ce0e-bdf2-498c-a37e-efe88a5c01d4
+        relationship_name: account_activities_2
+        lhs_module: Accounts
+        lhs_table: accounts
+        lhs_key: id
+        lhs_vname: null
+        rhs_module: Activities
+        rhs_table: activities
+        rhs_key: id
+        rhs_vname: LBL_ACTIVITY_STREAM
+        join_table: activities_users
+        join_key_lhs: parent_id
+        join_key_rhs: activity_id
+        relationship_type: many-to-many
+        relationship_role_column: parent_type
+        relationship_role_column_value: Accounts
+        reverse: '0'
+        deleted: '0'

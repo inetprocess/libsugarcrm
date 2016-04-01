@@ -48,7 +48,7 @@ class LangFileCleanerTest extends \PHPUnit_Framework_TestCase
     {
         \PHPUnit_Framework_Error_Warning::$enabled = false;
         $err_level = error_reporting();
-        error_reporting($err_level &~ E_WARNING);
+        error_reporting($err_level & ~E_WARNING);
         $fake_sugar = __DIR__ . '/fake_sugar';
         touch(self::$invalid_file);
         chmod(self::$invalid_file, 0000);
