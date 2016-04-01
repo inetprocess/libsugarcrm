@@ -163,9 +163,12 @@ class LogicHook
 
         // even if we have our own method, rely on sugar to identify hooks
         $logicHook = new \LogicHook();
+        // @codeCoverageIgnoreStart
         if (!method_exists($logicHook, 'loadHooks')) {
+            // Will fail on old sugar version.
             throw new \BadMethodCallException('The loadHooks method does not exist. Is your SugarCRM too old ?');
         }
+        // @codeCoverageIgnoreEnd
         $logicHook->setBean($bean);
 
         return $logicHook->loadHooks($beanManager->getModuleDirectory($module));

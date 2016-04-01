@@ -21,16 +21,17 @@ class UtilsTest extends SugarTestCase
         $this->assertInternalType('string', $multiselect);
         $this->assertEquals('^a^,^b^', $multiselect);
 
-        $multiselect = '^a^,^b^,^^';
+        $multiselect = '^a^,^b^,^^,^c^';
         $array = $util->multiselectToArray($multiselect);
         $this->assertInternalType('array', $array);
-        // we get the same array back
-        $this->assertEmpty(array_diff($array, $values));
+        // Empty value was removed
+        $this->assertEquals(array('a', 'b', 3 => 'c'), $array);
     }
 
     public function testAddAndRemoveLabels()
     {
-        $langFile = $this->getEntryPointInstance()->getPath() . '/custom/Extension/modules/Accounts/Ext/Language/en_us.lang.php';
+        $langFile = $this->getEntryPointInstance()->getPath()
+            . '/custom/Extension/modules/Accounts/Ext/Language/en_us.lang.php';
         if (file_exists($langFile)) {
             unlink($langFile);
         }

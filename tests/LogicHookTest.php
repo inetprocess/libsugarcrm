@@ -174,4 +174,13 @@ $hook_array["empty_hook"][] = array();');
         $this->assertArrayHasKey('lost_hook', $hooksAfter);
         $this->assertEmpty($hooksAfter['lost_hook'][0]['Defined In']);
     }
+
+    public function testFindHookInDefinition()
+    {
+        $def = array(
+            array('before_save' => array())
+        );
+        $ret = $this->lh->findHookInDefinition($def, 'before_save', null, null, null);
+        $this->assertNull($ret);
+    }
 }
