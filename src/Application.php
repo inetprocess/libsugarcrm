@@ -145,11 +145,13 @@ class Application
         if (!$this->isValid()) {
             throw new SugarException("{$this->path} is not a valid sugar installation.");
         }
+        // @codeCoverageIgnoreStart
         if (!defined('sugarEntry')) {
             // @codingStandardsIgnoreStart
             define('sugarEntry', true);
             // @codingStandardsIgnoreEnd
         }
+        // @codeCoverageIgnoreEnd
         require($this->path . '/sugar_version.php');
 
         $version = array(

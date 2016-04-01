@@ -30,12 +30,19 @@ class EntryPointTest extends SugarTestCase
 
     /**
      * @expectedException \RuntimeException
-     * @expectedExceptionMessageRegExp #Unable to create a SugarCRM\\EntryPoint more than once.#
+     * @expectedExceptionMessageRegExp #Unable to create another SugarCRM\\EntryPoint from another path.#
      */
     public function testCreateInstanceFailure()
     {
         $this->getEntryPointInstance();
         EntryPoint::createInstance(new Application(new NullLogger(), '/foo'), '1');
+    }
+
+    public function testCreateTwice()
+    {
+        $first = $this->getEntryPointInstance();
+        $second = EntryPoint::createInstance(new Application(new NullLogger(), $first->getPath()), '1');
+        $this->assertEquals($first, $second);
     }
 
     public function testGettersSetters()

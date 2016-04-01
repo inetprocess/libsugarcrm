@@ -120,22 +120,20 @@ class EntryPoint
      */
     public static function createInstance(Application $sugarApp, $sugarUserId)
     {
-        // We have an instance but with a different path
-        if (!is_null(self::$instance) && self::$instance->getPath() !== $sugarApp->getPath()) {
-            throw new \RuntimeException('Unable to create a SugarCRM\EntryPoint more than once.');
-        }
-
         if (!is_null(self::$instance)) {
-            $instance = self::$instance->getInstance();
-            $instance->setCurrentUser($sugarUserId);
-
-            return $instance;
+            if (self::$instance->getPath() !== $sugarApp->getPath()) {
+                // We have an instance but with a different path
+                throw new \RuntimeException('Unable to create another SugarCRM\EntryPoint from another path.');
+            }
+            self::$instance->getInstance();
+            self::$instance->setCurrentUser($sugarUserId);
+        } else {
+            // Init in a variable for now in case an exception occurs
+            $instance = new self($sugarApp, $sugarUserId);
+            $instance->initSugar();
+            // now that sugar in initialized without exceptions we can set the single instance.
+            self::$instance = $instance;
         }
-
-        $instance = new self($sugarApp, $sugarUserId);
-        $instance->initSugar();
-        self::$instance = $instance;
-
         return self::$instance;
     }
 
@@ -287,11 +285,13 @@ class EntryPoint
     private function loadSugarEntryPoint()
     {
         // 1. Check that SugarEntry is not set (it could be if we have multiple instances)
+        // @codeCoverageIgnoreStart
         if (!defined('sugarEntry')) {
             // @codingStandardsIgnoreStart
             define('sugarEntry', true);
             // @codingStandardsIgnoreEnd
         }
+        // @codeCoverageIgnoreEnd
         if (!defined('BYPASS_COMPOSER_AUTOLOADER')) {
             define('BYPASS_COMPOSER_AUTOLOADER', true);
         }
