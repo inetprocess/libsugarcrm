@@ -576,6 +576,7 @@ class BeanTest extends SugarTestCase
 
     /**
      * @group cache
+     * @group sugarcrm-slow
      */
     public function testClearCache()
     {

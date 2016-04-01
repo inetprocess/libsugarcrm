@@ -1,6 +1,7 @@
 <phpunit
   bootstrap="vendor/autoload.php"
   colors="true"
+  beStrictAboutTestsThatDoNotTestAnything="true"
   >
   <php>
     <env name='SUGARCRM_PATH' value="../sugarcrm"/>
@@ -19,6 +20,9 @@
   <testsuites>
     <!-- unit tests on EntryPoint must run first because it can be instantiated only once -->
     <testsuite name="EntryPoint">
+        <!-- Test first for constant sugarEntry -->
+        <file>tests/ApplicationTest.php</file>
+        <!-- Test second to test entry point before global initialization -->
         <file>tests/EntryPointTest.php</file>
     </testsuite>
     <testsuite name="Inet">
