@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.22-beta
+-----
+* Fix warning and output on System::repair
+
 1.1.21-beta
 -----
 * Add more functions for specific Repair and Rebuild
