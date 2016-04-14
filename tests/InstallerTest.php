@@ -26,7 +26,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     {
         $fake_sugar = __DIR__ . '/fake_sugar';
         $config_path = __DIR__ . '/installer/config_si.php';
-        $installer = new Installer(new Application(new NullLogger(), $fake_sugar), '', '', $config_path);
+        $installer = new Installer(new Application(new NullLogger(), $fake_sugar), '', $config_path);
         $installer->copyConfigSi();
         $this->assertFileEquals($config_path, $fake_sugar . '/config_si.php');
         $installer->deleteConfigSi();
@@ -36,7 +36,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     public function testPathManipulation()
     {
         $new_path = __DIR__ . '/new_sugar';
-        $installer = new Installer(new Application(new NullLogger(), $new_path), '', '', '');
+        $installer = new Installer(new Application(new NullLogger(), $new_path), '', '');
         $installer->createPath();
         $this->assertFileExists($new_path);
         $installer->deletePath();
@@ -67,7 +67,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractNotEmpty()
     {
-        $installer = new Installer($this->newApp(__DIR__), '', '', '');
+        $installer = new Installer($this->newApp(__DIR__));
         $installer->extract();
     }
 
@@ -77,7 +77,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractNotDir()
     {
-        $installer = new Installer($this->newApp(__FILE__), '', '', '');
+        $installer = new Installer($this->newApp(__FILE__));
         $installer->extract();
     }
 
@@ -87,7 +87,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractInvalidSource()
     {
-        $installer = new Installer($this->newApp(__DIR__ . '/empty'), '', '', '');
+        $installer = new Installer($this->newApp(__DIR__ . '/empty'));
         $installer->createPath();
         $installer->extract();
     }
@@ -98,14 +98,14 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractInvalidZip()
     {
-        $installer = new Installer($this->newApp(__DIR__ . '/empty'), '', __FILE__, '');
+        $installer = new Installer($this->newApp(__DIR__ . '/empty'), __FILE__, '');
         $installer->createPath();
         $installer->extract();
     }
 
     public function testExtract()
     {
-        $installer = new Installer($this->newApp(__DIR__ . '/empty'), '', __DIR__ . '/installer/Fake_Sugar.zip', '');
+        $installer = new Installer($this->newApp(__DIR__ . '/empty'), __DIR__ . '/installer/Fake_Sugar.zip', '');
         $installer->createPath();
         $installer->extract();
         $this->assertFileExists(__DIR__ . '/empty/sugar_version.php');
@@ -113,7 +113,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Stub the call to the url.
+     * Stub the installer
      */
     public function testRun()
     {
@@ -121,10 +121,9 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
         $installer_dir = __DIR__ . '/installer';
         $stub = $this->getMock(
             'Inet\SugarCRM\Installer',
-            array('callUrl'),
+            array('runSugarInstaller'),
             array(
                 $this->newApp($new_path),
-                '',
                 $installer_dir . '/Fake_Sugar.zip',
                 $installer_dir . '/config_si.php'
             )
@@ -143,11 +142,47 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException Inet\SugarCRM\Exception\InstallerException
+     * @expectedExceptionMessage The web installer failed. Check your config_si.php file.
+     */
+    public function testSugarInstallerExit()
+    {
+        $stub = $this->getMock(
+            'Inet\SugarCRM\Installer',
+            array('getInstallScriptPath'),
+            array(
+                $this->newApp('')
+            )
+        );
+        $stub->method('getInstallScriptPath')
+            ->willReturn(__DIR__ . '/installer/install_exit.php');
+        $stub->runSugarInstaller();
+    }
+
+    public function testSugarInstallerUnknownError()
+    {
+        $this->setExpectedException(
+            'Inet\SugarCRM\Exception\InstallerException',
+            'The web installer failed and return an unknown error. Check the install.log file on Sugar.'
+        );
+        $stub = $this->getMock(
+            'Inet\SugarCRM\Installer',
+            array('getInstallScriptPath'),
+            array(
+                $this->newApp('')
+            )
+        );
+        $stub->method('getInstallScriptPath')
+            ->willReturn(__DIR__ . '/installer/install_error.php');
+        $stub->runSugarInstaller();
+    }
+
+    /**
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
      * @expectedExceptionMessageRegExp /Missing or unreadable config_si/
      */
     public function testFailedRunInvalidConfigSi()
     {
-        $installer = new Installer($this->newApp(''), '', '', '');
+        $installer = new Installer($this->newApp(''));
         $installer->run();
     }
 
@@ -160,13 +195,7 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
             getenv('SUGARCRM_PATH'),
             'Please specify the SUGARCRM_PATH from the environment or phpunit.xml file.'
         );
-        $this->assertNotEmpty(
-            getenv('SUGARCRM_URL'),
-            'Please specify the SUGARCRM_URL from the environment or phpunit.xml file.'
-        );
-
         $install_path = getenv('SUGARCRM_PATH') . '/inetprocess_installer';
-        $install_url = getenv('SUGARCRM_URL') . '/inetprocess_installer';
         $fs = new Filesystem;
         if ($fs->exists($install_path)) {
             $fs->remove($install_path);
@@ -174,7 +203,6 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
         $fs->mkdir($install_path);
         $installer = new Installer(
             $this->newApp($install_path),
-            $install_url,
             __DIR__ . '/installer/Fake_Sugar.zip',
             __DIR__ . '/installer/config_si.php'
         );

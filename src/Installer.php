@@ -22,7 +22,6 @@ use Inet\SugarCRM\Exception\InstallerException;
 
 class Installer
 {
-    public $url;
     public $source;
     public $config;
 
@@ -30,10 +29,9 @@ class Installer
 
     private $fs;
 
-    public function __construct(Application $sugarApp, $url = null, $source = null, $config = null)
+    public function __construct(Application $sugarApp, $source = null, $config = null)
     {
         $this->sugarApp = $sugarApp;
-        $this->url = $url;
         $this->source = $source;
         $this->config = $config;
 
@@ -58,6 +56,11 @@ class Installer
     public function getConfigTarget()
     {
         return $this->getPath() . '/config_si.php';
+    }
+
+    public function getInstallScriptPath()
+    {
+        return $this->getPath() . '/install.php';
     }
 
     /**
@@ -159,40 +162,15 @@ class Installer
     }
 
     /**
-     * Call the url to run the Sugar silent install.
-     *
-     * @param timeout Default to 5 minutes.
+     * Run the sugar install script. This doesn't require a web server.
      */
-    public function callUrl($timeout = 300)
+    public function runSugarInstaller()
     {
-        $real_url = $this->url . '/install.php?goto=SilentInstall&cli=true';
-        $this->getLogger()->notice("Calling {$real_url} to install Sugar.");
-        $context = stream_context_create(
-            array(
-                'http' => array(
-                    'timeout' => $timeout
-                )
-            )
-        );
-        $h = fopen($real_url, 'r', false, $context);
-        if ($h === false) {
-            throw new InstallerException('Could not connect to the specified url.');
-        }
-
-        $installer_res = '';
-        while (!feof($h)) {
-            $installer_res .= fread($h, 1048576);
-        }
-        $metadata = stream_get_meta_data($h);
-        if (fclose($h) === false) {
-            throw new InstallerException('Unable to close the url.');
-        }
-
-        if ($metadata['timed_out']) {
-            throw new InstallerException(
-                "The web installer took longer than {$timeout} to finish. It is probably still running."
-            );
-        }
+        $_REQUEST['goto'] = 'SilentInstall';
+        $_REQUEST['cli'] = 'true';
+        ob_start();
+        require($this->getInstallScriptPath());
+        $installer_res = ob_get_clean();
         // find the bottle message
         if (preg_match('/<bottle>(.*)<\/bottle>/s', $installer_res, $msg) === 1) {
             $this->getLogger()->info('The web installer was successfully completed.');
@@ -239,7 +217,7 @@ class Installer
         // At this point we should have an empty dir for path.
         $this->extract();
         $this->copyConfigSi();
-        $this->callUrl();
+        $this->runSugarInstaller();
         $this->deleteConfigSi();
         $this->getLogger()->notice('Installation complete.');
     }

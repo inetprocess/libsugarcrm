@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.0
+-----
+* Out of beta \o/
+* Install performs offline without a web server
+
 1.1.22-beta
 -----
 * Fix warning and output on System::repair
