@@ -150,7 +150,7 @@ class System
      * Parse ouput of ob to remove html
      * and store messages.
      */
-    private function parseOutput($message)
+    public function parseOutput($message)
     {
         $message = preg_replace('#<script.*</script>#i', '', $message);
         $message = preg_replace('#<(br\s*/?|/h3)>#i', PHP_EOL, $message);
