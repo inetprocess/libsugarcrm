@@ -148,13 +148,31 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
     {
         $stub = $this->getMock(
             'Inet\SugarCRM\Installer',
-            array('getInstallScriptPath'),
+            array('getPath'),
             array(
                 $this->newApp('')
             )
         );
-        $stub->method('getInstallScriptPath')
-            ->willReturn(__DIR__ . '/installer/install_exit.php');
+        $stub->method('getPath')
+            ->willReturn(__DIR__ . '/installer/install_exit');
+        $stub->runSugarInstaller();
+    }
+
+    /**
+     * @expectedException Inet\SugarCRM\Exception\InstallerException
+     * @expectedExceptionMessageRegExp /The installer sub process failed with the following output/
+     */
+    public function testSugarInstallerProcessError()
+    {
+        $stub = $this->getMock(
+            'Inet\SugarCRM\Installer',
+            array('getPath'),
+            array(
+                $this->newApp('')
+            )
+        );
+        $stub->method('getPath')
+            ->willReturn(__DIR__ . '/installer/unknown_path');
         $stub->runSugarInstaller();
     }
 
@@ -166,13 +184,13 @@ class InstallerTest extends \PHPUnit_Framework_TestCase
         );
         $stub = $this->getMock(
             'Inet\SugarCRM\Installer',
-            array('getInstallScriptPath'),
+            array('getPath'),
             array(
                 $this->newApp('')
             )
         );
-        $stub->method('getInstallScriptPath')
-            ->willReturn(__DIR__ . '/installer/install_error.php');
+        $stub->method('getPath')
+            ->willReturn(__DIR__ . '/installer/install_error');
         $stub->runSugarInstaller();
     }
 

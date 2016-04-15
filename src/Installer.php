@@ -17,6 +17,8 @@
 
 namespace Inet\SugarCRM;
 
+use Symfony\Component\Process\PhpProcess;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Inet\SugarCRM\Util\Filesystem;
 use Inet\SugarCRM\Exception\InstallerException;
 
@@ -56,11 +58,6 @@ class Installer
     public function getConfigTarget()
     {
         return $this->getPath() . '/config_si.php';
-    }
-
-    public function getInstallScriptPath()
-    {
-        return $this->getPath() . '/install.php';
     }
 
     /**
@@ -161,16 +158,37 @@ class Installer
         $this->fs->remove($this->getConfigTarget());
     }
 
+    public function runSubProcessInstaller()
+    {
+        $script = <<<'EOF'
+<?php
+$_REQUEST['goto'] = 'SilentInstall';
+$_REQUEST['cli'] = 'true';
+require('install.php');
+EOF;
+
+        $output = '';
+        $process = new PhpProcess($script, $this->getPath());
+        // This will be a long process so we allow up to an hour.
+        $process->setTimeout(3600);
+        try {
+            $process->mustRun(function ($type, $buffer) use (&$output) {
+                $output .= $buffer;
+            });
+        } catch (ProcessFailedException $e) {
+            throw new InstallerException(
+                'The installer sub process failed with the following output:'. PHP_EOL . $e->getMessage()
+            );
+        }
+        return $output;
+    }
+
     /**
      * Run the sugar install script. This doesn't require a web server.
      */
     public function runSugarInstaller()
     {
-        $_REQUEST['goto'] = 'SilentInstall';
-        $_REQUEST['cli'] = 'true';
-        ob_start();
-        require($this->getInstallScriptPath());
-        $installer_res = ob_get_clean();
+        $installer_res = $this->runSubProcessInstaller();
         // find the bottle message
         if (preg_match('/<bottle>(.*)<\/bottle>/s', $installer_res, $msg) === 1) {
             $this->getLogger()->info('The web installer was successfully completed.');
