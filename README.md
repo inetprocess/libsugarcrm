@@ -73,7 +73,6 @@ Usage Example:
 require_once 'vendor/autoload.php';
 use Psr\Log\NullLogger;
 use Inet\SugarCRM\EntryPoint;
-use Inet\SugarCRM\DB;
 use Inet\SugarCRM\Bean;
 
 if (!EntryPoint::isCreated()) {
@@ -83,11 +82,9 @@ if (!EntryPoint::isCreated()) {
     EntryPoint::createInstance($sugarApp, '1');
 }
 $sugarEP = EntryPoint::getInstance();
-// get the DB Class
-$inetSugarDB = new DB($sugarEP);
 
 // instanciate the Bean class to retrieve User with id 1
-$inetSugarBean = new Bean($sugarEP, $inetSugarDB);
+$inetSugarBean = new Bean($sugarEP);
 $adminUser = $inetSugarBean->getBean('Users', 1);
 echo $adminUser->name;
 ```
