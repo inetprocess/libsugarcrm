@@ -31,7 +31,7 @@ use Psr\Log\NullLogger;
 use Inet\SugarCRM\Application;
 
 $sugarApp = new Application(new NullLogger(), '/home/sugarcrm/www');
-echo $sugarApp->getSugarPath();
+echo $sugarApp->getPath();
 if ($sugarApp->isValid()) {
     echo $sugarApp->getVersion();
 }
