@@ -457,6 +457,10 @@ class Bean
                 continue;
             }
 
+            if ($field === 'date_modified') {
+                $sugarBean->update_date_modified = false;
+            }
+
             $sugarBean->$field = $value;
             $this->getLogger()->debug($this->logPrefix . "Saving $field, value has changed");
             $changedValues++;

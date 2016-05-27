@@ -1,5 +1,8 @@
 Changelog
 =========
+1.2.1
+-----
+* Added "update_date_modified" in bean in case we want to force the date_modified
 
 1.2.0
 -----
