@@ -145,6 +145,16 @@ class Bean
     }
 
     /**
+     * Get the DB
+     *
+     * @return DB
+     */
+    public function getDb()
+    {
+        return $this->db;
+    }
+
+    /**
      * Get a Bean from SugarCRM
      *
      * @param string  $module   Module's name
@@ -783,8 +793,13 @@ class Bean
     public function getModuleCustomTable($module)
     {
         $sugarBean = $this->getBean($module);
+        $customTable = $sugarBean->get_custom_table_name();
+        $data = $this->db->query("SHOW TABLES LIKE '$customTable'");
+        if (empty($data)) {
+            return '';
+        }
 
-        return $sugarBean->get_custom_table_name();
+        return $customTable;
     }
 
     /**

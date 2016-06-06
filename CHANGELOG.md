@@ -1,5 +1,10 @@
 Changelog
 =========
+1.2.2
+-----
+* Added getDB() in Bean
+* Check if the custom table exists (because sugar returns the name without checking)
+
 1.2.1
 -----
 * Added "update_date_modified" in bean in case we want to force the date_modified
