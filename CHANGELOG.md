@@ -1,5 +1,9 @@
 Changelog
 =========
+1.2.3
+-----
+* Bug when getting the list of hooks: we had only one hook per weight because the array key was the weight
+
 1.2.2
 -----
 * Added getDB() in Bean

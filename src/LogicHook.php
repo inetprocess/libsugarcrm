@@ -109,8 +109,10 @@ class LogicHook
                 continue;
             }
 
+            $i = 0;
             foreach ($hooks[$type] as $hook) {
-                $sortedHooks[$type][$hook[0]] = array(
+                $num = str_pad($hook[0], 20, 0, \STR_PAD_LEFT) . '_' . $i;
+                $sortedHooks[$type][$num] = array(
                     'Weight' => $hook[0],
                     'Description' => $hook[1],
                     'File' => $hook[2],
@@ -118,8 +120,8 @@ class LogicHook
                     'Method' => $hook[4],
                     'Defined In' => $this->findHookInDefinition($hooksDef, $type, $hook[2], $hook[3], $hook[4]),
                 );
+                $i++;
             }
-
             ksort($sortedHooks[$type]);
             unset($hooks[$type]);
         }
