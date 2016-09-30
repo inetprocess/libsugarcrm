@@ -185,7 +185,10 @@ class System
      */
     public function disableActivity()
     {
-        \Activity::disable();
+        // Do nothing if the class doesn't exists. On older Sugar version.
+        if (class_exists('Activity')) {
+            \Activity::disable();
+        }
     }
 
     /**
@@ -194,6 +197,10 @@ class System
      */
     public function isActivityEnabled()
     {
-        return \Activity::isEnabled();
+        // Return false if the class doesn't exists. On older Sugar version.
+        if (class_exists('Activity')) {
+            return \Activity::isEnabled();
+        }
+        return false;
     }
 }
