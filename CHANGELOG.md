@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.5
+----
+* Import `$app_list_strings` and `$app_strings` as global variables on SugarCRM load.
+
 1.2.4
 -----
 * Fix call to Activity class when it doesn't exists on older SugarCRM version.

@@ -308,6 +308,14 @@ class EntryPoint
         // 2. Get the "autoloader"
         require_once('include/entryPoint.php');
 
+        // Set language globally
+        if (empty($current_language)) {
+            $current_language = $sugar_config['default_language'];
+        }
+
+        $app_list_strings = return_app_list_strings_language($current_language);
+        $app_strings = return_application_language($current_language);
+
         // Set all variables as Global to be able to access $sugar_config for example
         // Even the GLOBALS one ! Because I save it locally and it could disappear later
         $this->defineVariablesAsGlobal(
