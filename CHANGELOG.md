@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.6
+----
+* Force save of `created_by` and `modified_user_id`.
+
 1.2.5
 ----
 * Import `$app_list_strings` and `$app_strings` as global variables on SugarCRM load.
@@ -20,7 +24,7 @@ Changelog
 
 1.2.1
 -----
-* Added "update_date_modified" in bean in case we want to force the date_modified
+* Added `update_date_modified` in bean in case we want to force the `date_modified`
 
 1.2.0
 -----

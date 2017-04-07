@@ -467,8 +467,15 @@ class Bean
                 continue;
             }
 
+            // force the update of some fields
             if ($field === 'date_modified') {
                 $sugarBean->update_date_modified = false;
+            }
+            if ($field === 'created_by') {
+                $sugarBean->set_created_by = false;
+            }
+            if ($field === 'modified_user_id') {
+                $sugarBean->update_modified_by = false;
             }
 
             $sugarBean->$field = $value;
