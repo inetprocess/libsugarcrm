@@ -321,6 +321,7 @@ class Bean
      */
     public function searchBeans($module, array $searchFields, $deleted = 0, $limit = 100)
     {
+        global $db;
         // Search the related record ID
         $sugarBean = $this->getBean($module);
         foreach ($searchFields as $searchField => $externalValue) {
@@ -338,8 +339,8 @@ class Bean
         $moduleFields = $this->getModuleFields($module);
         foreach ($searchFields as $searchField => $externalValue) {
             // Search my field in the module fields
-            $searchField = $moduleFields[$searchField]['Table'] . '.' . $searchField;
-            $whereCriteras[] = "$searchField = '$externalValue'";
+            $searchField = '`' . $moduleFields[$searchField]['Table'] . '`.`' . $searchField . '`';
+            $whereCriteras[] = "$searchField = " . $db->quoted($externalValue);
         }
 
         $where = implode(' AND ', $whereCriteras);

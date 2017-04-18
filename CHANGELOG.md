@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.7
+----
+* Fix parameter quoting in `Bean::searchBeans`
+
 1.2.6
 ----
 * Force save of `created_by` and `modified_user_id`.

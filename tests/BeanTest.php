@@ -12,6 +12,9 @@ use Psr\Log\NullLogger;
  */
 class BeanTest extends SugarTestCase
 {
+    const ACCOUNT_NAME = "Test PHPUNIT'éà account";
+    const USER_NAME = 'Test PHPUNIT user';
+
     public function getBeanManager()
     {
         $sugar = $this->getEntryPointInstance();
@@ -22,9 +25,9 @@ class BeanTest extends SugarTestCase
     public function tearDown()
     {
         $db = new DB($this->getEntryPointInstance());
-        $sql = "DELETE from accounts where name='Test PHPUNIT account';";
+        $sql = "DELETE from accounts where name='" . $db->escape(self::ACCOUNT_NAME) . "';";
         $db->query($sql);
-        $sql = "DELETE from users where user_name='Test PHPUNIT user';";
+        $sql = "DELETE from users where user_name='" . self::USER_NAME. "';";
         $db->query($sql);
     }
 
@@ -103,7 +106,7 @@ class BeanTest extends SugarTestCase
 
     public function testUpdateBean()
     {
-        $account_name = 'Test PHPUNIT account';
+        $account_name = self::ACCOUNT_NAME;
         $bm = $this->getBeanManager();
         $account = $bm->newBean('Accounts');
         // Test dry run
@@ -117,7 +120,7 @@ class BeanTest extends SugarTestCase
         $fields = array('name' => $account_name);
         $ret = $bm->updateBean($account, $fields, BeanManager::MODE_CREATE);
         $this->assertEquals(BeanManager::SUGAR_CREATED, $ret);
-        $account = $bm->getBean('Accounts', $account->id);
+        $account = $bm->getBean('Accounts', $account->id, array('encode' => false));
         $this->assertNotEmpty($account->assigned_user_id);
         $this->assertNotEmpty($account->team_id);
         $this->assertNotEmpty($account->team_set_id);
@@ -154,7 +157,7 @@ class BeanTest extends SugarTestCase
         );
         $ret = $bm->updateBean($account, $fields, BeanManager::MODE_CREATE_WITH_ID);
         $this->assertEquals(BeanManager::SUGAR_CREATED, $ret);
-        $account = $bm->getBean('Accounts', 'test_account_id');
+        $account = $bm->getBean('Accounts', 'test_account_id', array('encode' => false));
         $this->assertInstanceOf('Account', $account);
         $this->assertEquals('test_account_id', $account->id);
         $this->assertEquals($account_name, $account->name);
@@ -165,7 +168,7 @@ class BeanTest extends SugarTestCase
 
     public function testUserEmailUpdate()
     {
-        $user_name = 'Test PHPUNIT user';
+        $user_name = self::USER_NAME;
         $email = 'foo@bar.com';
         $bm = $this->getBeanManager();
         $user_bean = $bm->newBean('Users');
@@ -402,7 +405,7 @@ class BeanTest extends SugarTestCase
         // Create it
         $bm = $this->getBeanManager();
         $account = $bm->newBean('Accounts');
-        $bm->updateBean($account, array('name' => 'Test PHPUNIT account'), BeanManager::MODE_CREATE);
+        $bm->updateBean($account, array('name' => self::ACCOUNT_NAME), BeanManager::MODE_CREATE);
         $account = $bm->getBean('Accounts', $bm->getLastUpdatedId());
         $this->assertInstanceOf('SugarBean', $account);
         $this->assertInstanceOf('Account', $account);
@@ -443,7 +446,7 @@ class BeanTest extends SugarTestCase
         // Create it
         $bm = $this->getBeanManager();
         $account = $bm->newBean('Accounts');
-        $bm->updateBean($account, array('name' => 'Test PHPUNIT account'), BeanManager::MODE_CREATE);
+        $bm->updateBean($account, array('name' => self::ACCOUNT_NAME), BeanManager::MODE_CREATE);
         $account = $bm->getBean('Accounts', $bm->getLastUpdatedId());
         $this->assertInstanceOf('SugarBean', $account);
         $this->assertInstanceOf('Account', $account);
@@ -452,12 +455,15 @@ class BeanTest extends SugarTestCase
 
         // Get from the list
         $bm = $this->getBeanManager();
-        $accs = $bm->getList('Accounts', array("name = 'Test PHPUNIT account'"));
+        $accs = $bm->getList('Accounts', array("name = '" . $bm->getDb()->escape(self::ACCOUNT_NAME) . "'"));
         $this->assertInternalType('array', $accs);
         $this->assertNotEmpty($accs);
 
         // Get all and count that we have the right number
-        $this->assertCount($bm->countRecords('Accounts', array("name = 'Test PHPUNIT account'")), $accs);
+        $this->assertCount(
+            $bm->countRecords('Accounts', array("name = '" . $bm->getDb()->escape(self::ACCOUNT_NAME) . "'")),
+            $accs
+        );
     }
 
     public function testGetListAndCompareDeleted()
@@ -508,8 +514,16 @@ class BeanTest extends SugarTestCase
 
     public function testSearchCorrectWithWhere()
     {
+        global $db;
         $bm = $this->getBeanManager();
-        $bm->searchBeans('Accounts', array('id' => '123'));
+        $account = $bm->newBean('Accounts');
+        $bm->updateBean($account, array('name' => self::ACCOUNT_NAME), BeanManager::MODE_CREATE);
+        $ret = $bm->searchBeans('Accounts', array('name' => self::ACCOUNT_NAME));
+        $this->assertNotEmpty($ret);
+        $account = $ret[0];
+        $this->assertInstanceOf('Account', $account);
+        $this->assertEquals($db->encodeHTML(self::ACCOUNT_NAME), $account->name);
+        $this->assertEquals($bm->getLastUpdatedId(), $account->id);
     }
 
     /**
