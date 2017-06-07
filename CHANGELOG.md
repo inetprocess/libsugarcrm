@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.8
+----
+* Replace use of `field_name_map` by `field_defs` for compatibility with Sugar 7.9.0.0
+
 1.2.7
 ----
 * Fix parameter quoting in `Bean::searchBeans`

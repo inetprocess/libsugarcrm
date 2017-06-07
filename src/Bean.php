@@ -326,7 +326,7 @@ class Bean
         $sugarBean = $this->getBean($module);
         foreach ($searchFields as $searchField => $externalValue) {
             // Check the the fields are defined correctly
-            if (!isset($sugarBean->field_name_map[$searchField])) {
+            if (!isset($sugarBean->field_defs[$searchField])) {
                 $msg = "{$searchField} ($externalValue) not in Sugar for module $module, can't search on it";
                 throw new \RuntimeException($msg);
             }
@@ -455,7 +455,7 @@ class Bean
         foreach ($fields as $field => $value) {
             // It does not exist in Sugar
             if (!array_key_exists($field, $moduleFields) && !array_key_exists($field, $moduleRels)
-              && !array_key_exists($field, $sugarBean->field_name_map)
+              && !array_key_exists($field, $sugarBean->field_defs)
             ) {
                 $this->getLogger()->error($this->logPrefix . "$field doesn't seem to exist in Sugar");
             }
@@ -627,13 +627,13 @@ class Bean
         );
         foreach ($sugarBean->column_fields as $fieldName) {
             // No information about that field: ERROR
-            if (!array_key_exists($fieldName, $sugarBean->field_name_map)) {
-                throw new \RuntimeException("I am not able to find the field $field in field_name_map");
+            if (!array_key_exists($fieldName, $sugarBean->field_defs)) {
+                throw new \RuntimeException("I am not able to find the field $field in field_defs");
             }
-            if ($sugarBean->field_name_map[$fieldName]['type'] == 'relate'
-              || $sugarBean->field_name_map[$fieldName]['type'] == 'link'
-              || (array_key_exists('source', $sugarBean->field_name_map[$fieldName])
-                  && $sugarBean->field_name_map[$fieldName]['source'] == 'non-db')
+            if ($sugarBean->field_defs[$fieldName]['type'] == 'relate'
+              || $sugarBean->field_defs[$fieldName]['type'] == 'link'
+              || (array_key_exists('source', $sugarBean->field_defs[$fieldName])
+                  && $sugarBean->field_defs[$fieldName]['source'] == 'non-db')
             ) {
                 unset($tableFields[$fieldName]);
                 continue;
@@ -653,17 +653,17 @@ class Bean
                 $moduleInfoFields[$fieldName][$sugarAttribute] = '';
 
                 // No attribute of that type ?
-                if (!array_key_exists($sugarAttribute, $sugarBean->field_name_map[$fieldName])) {
+                if (!array_key_exists($sugarAttribute, $sugarBean->field_defs[$fieldName])) {
                     continue;
                 }
 
                 // specific case of label
                 if ($sugarAttribute === 'vname') {
-                    $label = translate($sugarBean->field_name_map[$fieldName][$sugarAttribute], $module);
+                    $label = translate($sugarBean->field_defs[$fieldName][$sugarAttribute], $module);
                     $moduleInfoFields[$fieldName][$sugarAttribute] = $label;
                 // Specific case of Lists (dropdown)
                 } elseif ($sugarAttribute === 'options') {
-                    $optionsName = $sugarBean->field_name_map[$fieldName][$sugarAttribute];
+                    $optionsName = $sugarBean->field_defs[$fieldName][$sugarAttribute];
                     $moduleInfoFields[$fieldName][$sugarAttribute] = $optionsName;
                     if (array_key_exists($optionsName, $listStrings)) {
                         $moduleInfoFields[$fieldName]['options_list'] = array();
@@ -675,7 +675,7 @@ class Bean
                     }
                 } else {
                     $moduleInfoFields[$fieldName][$sugarAttribute] = $sugarBean
-                        ->field_name_map[$fieldName][$sugarAttribute];
+                        ->field_defs[$fieldName][$sugarAttribute];
                 }
             }
         }
