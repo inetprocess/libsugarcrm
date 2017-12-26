@@ -324,10 +324,18 @@ class Bean
         global $db;
         // Search the related record ID
         $sugarBean = $this->getBean($module);
-        foreach ($searchFields as $searchField => $externalValue) {
+        // Make sure the fields criteras are set correctly
+        $searchFields = array_map(function ($critera) {
+            return array_replace(array(
+                'value' => '',
+                'operator' => '=',
+            ), is_array($critera) ? $critera : array('value' => $critera));
+        }, $searchFields);
+
+        foreach ($searchFields as $searchField => $critera) {
             // Check the the fields are defined correctly
             if (!isset($sugarBean->field_defs[$searchField])) {
-                $msg = "{$searchField} ($externalValue) not in Sugar for module $module, can't search on it";
+                $msg = "{$searchField} ({$critera['value']}) not in Sugar for module $module, can't search on it";
                 throw new \RuntimeException($msg);
             }
         }
@@ -337,10 +345,10 @@ class Bean
         // but maybe the _cstm ?
         $whereCriteras = array();
         $moduleFields = $this->getModuleFields($module);
-        foreach ($searchFields as $searchField => $externalValue) {
+        foreach ($searchFields as $searchField => $critera) {
             // Search my field in the module fields
             $searchField = '`' . $moduleFields[$searchField]['Table'] . '`.`' . $searchField . '`';
-            $whereCriteras[] = "$searchField = " . $db->quoted($externalValue);
+            $whereCriteras[] = "$searchField " . $critera['operator'] . " " . $db->quoted($critera['value']);
         }
 
         $where = implode(' AND ', $whereCriteras);
