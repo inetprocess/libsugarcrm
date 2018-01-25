@@ -29,7 +29,7 @@ class SugarPDO extends PDO
     public function __construct(Application $sugarApp, $options = array())
     {
         $this->sugarApp = $sugarApp;
-        $params = $this->getPdoParams();
+        $params = self::getPdoParams($this->getApplication());
         parent::__construct($params['dsn'], $params['username'], $params['password'], $options);
     }
 
@@ -38,15 +38,15 @@ class SugarPDO extends PDO
         return $this->sugarApp;
     }
 
-    protected function getPdoParams()
+    public static function getPdoParams(Application $sugarApp)
     {
-        $sugar_config = $this->getApplication()->getSugarConfig();
+        $sugar_config = $sugarApp->getSugarConfig();
         if (!array_key_exists('dbconfig', $sugar_config)
             || !is_array($sugar_config['dbconfig'])
         ) {
             throw new SugarException('Configuration parameter "db_config" is not an array');
         }
-        $dbconfig = $this->normalizeDbParams($sugar_config['dbconfig']);
+        $dbconfig = self::normalizeDbParams($sugar_config['dbconfig']);
 
         $params = array(
             'host' => $dbconfig['db_host_name'],
@@ -73,7 +73,7 @@ class SugarPDO extends PDO
      *
      * @throws SugarException if some required options are not present.
      */
-    public function normalizeDbParams($params)
+    public static function normalizeDbParams($params)
     {
         $defaults = array(
             'db_password' => '',

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.10
+----
+* Make PDO parameters available publicly
+
 1.2.9
 ----
 * Allow to specify the operator in where clause for Bean::searchBeans
