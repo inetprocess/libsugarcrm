@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.11
+----
+* Add new class `SugarQueryIterator`
+
 1.2.10
 ----
 * Make PDO parameters available publicly

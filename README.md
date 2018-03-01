@@ -124,3 +124,23 @@ $inetSugarUtils = new Utils(EntryPoint::getInstance());
 $convertedArray = $inetSugarUtils->arrayToMultiselect(array('test' => 'inet'));
 echo $convertedArray;
 ```
+
+## Inet\SugarCRM\SugarQueryIterator
+Iterator class to iterate in a memory safe way SugarQuery results.
+
+Usage Example:
+Loop records 100 to 300
+```php
+<?php
+$query = new \SugarQuery();
+// setup $query
+
+$iter = new SugarQueryIterator($query);
+$iter->setStartOffset(100);
+foreach ($iter as $id => $bean) {
+   // Do something with $bean
+   if ($iter->getIterationCounter() >= 200) {
+       break;
+   }
+}
+```
