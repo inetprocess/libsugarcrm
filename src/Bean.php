@@ -158,51 +158,51 @@ class Bean
      * Get a Bean from SugarCRM
      *
      * @param string  $module   Module's name
-     * @param string  $id       UUID
+     * @param string|null  $id       UUID
      * @param array   $params   list of params
-     * @param boolean $deleted  Retrieve the bean even if it's deleted
-     * @param boolean $useCache
+     * @param bool    $deleted  Retrieve the bean even if it's deleted
+     * @param bool    $useCache
      *
      * @throws \InvalidArgumentException
      *
-     * @return SugarBean SugarCRM Bean
+     * @return SugarBean|false SugarCRM Bean
      */
-    public function getBean($module, $id = null, $params = array(), $deleted = true, $useCache = false)
+    public function getBean(string $module, ?string $id = null, array $params = [], bool $deleted = true, bool $useCache = false): SugarBean|false
     {
-        if ($useCache && class_exists('BeanFactory')) {
-            return \BeanFactory::getBean($module, $id, $params, $deleted);
+        if ($useCache && class_exists(BeanFactory::class)) {
+            return BeanFactory::getBean($module, $id, $params, $deleted);
         }
 
         // If I use an old version of SugarCRM, do exactly what BeanFactory does
         // Check if params is an array, if not use old arguments
         if (isset($params) && !is_array($params)) {
-            $params = array('encode' => $params);
+            $params = ['encode' => $params];
         }
 
         // Pull values from $params array
-        $encode = isset($params['encode']) ? $params['encode'] : true;
-        $deleted = isset($params['deleted']) ? $params['deleted'] : $deleted;
+        $encode = $params['encode'] ?? true;
+        $deleted = $params['deleted'] ?? $deleted;
+
         // Module exists? Load it
         if (!array_key_exists($module, $this->beanList)) {
-            throw new \InvalidArgumentException($module . ' does not exist in SugarCRM, I cannot retrieve anything');
+            throw new \InvalidArgumentException("{$module} does not exist in SugarCRM, I cannot retrieve anything");
         }
 
         $beanClass = $this->beanList[$module];
         if (!class_exists($beanClass)) {
-            throw new SugarException("Class $beanClass does not exist");
+            throw new SugarException("Class {$beanClass} does not exist");
         }
 
         $bean = new $beanClass();
-        if (!is_null($id)) {
-            $this->getLogger()->debug($this->logPrefix . "Retrieving $module with ID '$id' (deleted = $deleted)");
+        if ($id !== null) {
+            $this->getLogger()->debug("{$this->logPrefix}Retrieving {$module} with ID '{$id}' (deleted = {$deleted})");
             // to change the parent bean, but not the related (e.g. change Account Name of Opportunity)
             if (!empty($params['disable_row_level_security'])) {
                 $bean->disable_row_level_security = true;
             }
             $result = $bean->retrieve($id, $encode, $deleted);
-            if (is_null($result)) {
-                $this->getLogger()->info($this->logPrefix . 'Nothing to retrieve.');
-
+            if ($result === null) {
+                $this->getLogger()->info("{$this->logPrefix}Nothing to retrieve.");
                 return false;
             }
         }
@@ -347,7 +347,7 @@ class Bean
         $moduleFields = $this->getModuleFields($module);
         foreach ($searchFields as $searchField => $critera) {
             // Search my field in the module fields
-            $searchField = '`' . $moduleFields[$searchField]['Table'] . '`.`' . $searchField . '`';
+            $searchField = "`{$moduleFields[$searchField]['Table']}`.`{$searchField}`";
             $whereCriteras[] = "$searchField " . $critera['operator'] . " " . $db->quoted($critera['value']);
         }
 

@@ -16,16 +16,15 @@
     "license": "Apache-2.0",
     "minimum-stability": "stable",
     "require": {
-        "php": ">=5.3",
-        "psr/log": "~1.0",
-        "symfony/finder": "~2",
-        "symfony/filesystem": "~2",
-        "symfony/yaml": "~2",
-        "symfony/process": "^2.8"
+        "php": "^8.0",
+        "psr/log": "^1.1|^2.0|^3.0",
+        "symfony/finder": "^5.4|^6.0",
+        "symfony/filesystem": "^5.4|^6.0",
+        "symfony/yaml": "^5.4|^6.0",
+        "symfony/process": "^5.4|^6.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.0",
-        "phpunit/dbunit": "~1.3"
+        "phpunit/phpunit": "^9.5|^10.0"
     },
     "autoload": {
         "psr-4": {

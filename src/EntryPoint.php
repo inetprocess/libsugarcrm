@@ -89,9 +89,8 @@ class EntryPoint
     /**
      * Constructor, to get the Container, then the log and config
      *
-     * @param LoggerInterface $log         Allow any logger extended from PSR\Log
-     * @param Application     $sugarApp
-     * @param string          $sugarUserId
+     * @param Application $sugarApp
+     * @param string     $sugarUserId
      */
     private function __construct(Application $sugarApp, $sugarUserId)
     {
@@ -112,13 +111,13 @@ class EntryPoint
     /**
      * Create the singleton instance only if it doesn't exists already.
      *
-     * @param LoggerInterface $log         Allow any logger extended from PSR\Log
-     * @param Application     $sugarApp
-     * @param string          $sugarUserId
+     * @param Application $sugarApp
+     * @param string      $sugarUserId
      *
      * @throws \RuntimeException
+     * @return EntryPoint
      */
-    public static function createInstance(Application $sugarApp, $sugarUserId)
+    public static function createInstance(Application $sugarApp, string $sugarUserId): EntryPoint
     {
         if (!is_null(self::$instance)) {
             if (self::$instance->getPath() !== $sugarApp->getPath()) {
@@ -142,9 +141,9 @@ class EntryPoint
      *
      * @throws \RuntimeException if the instance is not initiated.
      *
-     * @return LoggerInterface
+     * @return EntryPoint
      */
-    public static function getInstance()
+    public static function getInstance(): EntryPoint
     {
         if (is_null(self::$instance)) {
             throw new \RuntimeException('You must first create the singleton instance with createInstance().');
@@ -226,11 +225,11 @@ class EntryPoint
         $current_user = new \User;
         $current_user = $current_user->retrieve($sugarUserId);
         if (empty($current_user)) {
-            throw new \InvalidArgumentException('Wrong User ID: ' . $sugarUserId);
+            throw new \InvalidArgumentException("Wrong User ID: {$sugarUserId}");
         }
         $this->currentUser = $GLOBALS['current_user'] = $current_user;
         $this->sugarUserId = $sugarUserId;
-        $this->getLogger()->info($this->logPrefix . "Changed current user to {$current_user->full_name}.");
+        $this->getLogger()->info("{$this->logPrefix}Changed current user to {$current_user->full_name}.");
     }
 
     /**
@@ -260,7 +259,7 @@ class EntryPoint
         // If called by a class / method
         if (isset($callers[1]['class'])) {
             $msg = " - I have been called by {$callers[1]['class']}::{$callers[1]['function']}";
-            $this->getLogger()->info($this->logPrefix . __FUNCTION__ . $msg);
+            $this->getLogger()->info("{$this->logPrefix}{__FUNCTION__}{$msg}");
         }
         $this->chdirToSugarDir();
         $this->loadSugarEntryPoint();
@@ -276,7 +275,7 @@ class EntryPoint
     private function chdirToSugarDir()
     {
         if (!$this->getApplication()->isInstalled()) {
-            throw new SugarException('Unable to find an installed instance of SugarCRM in :' . $this->getPath(), 1);
+            throw new SugarException("Unable to find an installed instance of SugarCRM in: {$this->getPath()}", 1);
         }
         $this->lastCwd = realpath(getcwd());
         chdir($this->getPath());

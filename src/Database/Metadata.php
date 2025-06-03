@@ -47,7 +47,7 @@ class Metadata extends AbstractTablesDiff
      */
     public function loadFromFile()
     {
-        $this->getLogger()->debug('Reading metadata from ' . $this->defFile);
+        $this->getLogger()->debug("Reading metadata from {$this->defFile}");
         $fields = Yaml::parse($this->defFile);
         if (!is_array($fields)) {
             $fields = array();

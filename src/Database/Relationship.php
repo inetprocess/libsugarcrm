@@ -48,7 +48,7 @@ class Relationship extends AbstractTablesDiff
      */
     public function loadFromFile()
     {
-        $this->getLogger()->debug('Reading relationships from ' . $this->defFile);
+        $this->getLogger()->debug("Reading relationships from {$this->defFile}");
         $relsFromFile = Yaml::parse($this->defFile);
         if (!is_array($relsFromFile)) {
             $relsFromFile = array();
